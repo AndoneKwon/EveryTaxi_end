@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/sign_in"
+            android:icon="@drawable/signin"
+            android:title="SignIn" />
+        <item
+            android:id="@+id/sign_up"
+            android:icon="@drawable/signup"
+            android:title="SignUp" />
+        <item
+            android:id="@+id/logout"
+            android:icon="@drawable/logout"
+            android:title="LogOut" />
+        <item
+            android:id="@+id/destination"
+            android:icon="@drawable/destination"
+            android:title="목적지지정" />
+    </group>
+
+</menu>
