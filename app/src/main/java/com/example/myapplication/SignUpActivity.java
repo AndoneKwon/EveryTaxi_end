@@ -37,6 +37,7 @@ public class SignUpActivity extends AppCompatActivity {
     private static final int PICK_FROM_ALBUM = 1;
     private static final int PICK_FROM_CAMERA = 2;
     private File tempFile;
+    int select=0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +53,14 @@ public class SignUpActivity extends AppCompatActivity {
         select_s_card.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                select=0;
+                goToAlbum();
+            }
+        });
+        select_p_picture.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v){
+                select=1;
                 goToAlbum();
             }
         });
@@ -125,7 +134,12 @@ public class SignUpActivity extends AppCompatActivity {
         intent.setType(MediaStore.Images.Media.CONTENT_TYPE);
         startActivityForResult(intent, PICK_FROM_ALBUM);
     }
+    private void goToAlbum2() {
 
+        Intent intent2 = new Intent(Intent.ACTION_PICK);
+        intent2.setType(MediaStore.Images.Media.CONTENT_TYPE);
+        startActivityForResult(intent2, PICK_FROM_ALBUM);
+    }
 
     /**
      *  카메라에서 이미지 가져오기
@@ -173,22 +187,38 @@ public class SignUpActivity extends AppCompatActivity {
      *  tempFile 을 bitmap 으로 변환 후 ImageView 에 설정한다.
      */
     private void setImage() {
+        if(select==0){
+            s_card_icon = findViewById(R.id.s_card_icon);
 
-        s_card_icon = findViewById(R.id.s_card_icon);
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            Bitmap originalBm = BitmapFactory.decodeFile(tempFile.getAbsolutePath(), options);
+            Log.d(TAG, "setImage : " + tempFile.getAbsolutePath());
 
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        Bitmap originalBm = BitmapFactory.decodeFile(tempFile.getAbsolutePath(), options);
-        Log.d(TAG, "setImage : " + tempFile.getAbsolutePath());
+            s_card_icon.setImageBitmap(originalBm);
 
-        s_card_icon.setImageBitmap(originalBm);
+            /**
+             *  tempFile 사용 후 null 처리를 해줘야 합니다.
+             *  (resultCode != RESULT_OK) 일 때 tempFile 을 삭제하기 때문에
+             *  기존에 데이터가 남아 있게 되면 원치 않은 삭제가 이뤄집니다.
+             */
+            tempFile = null;
+        }
+        else{
+            p_picture_icon = findViewById(R.id.p_picture_icon);
 
-        /**
-         *  tempFile 사용 후 null 처리를 해줘야 합니다.
-         *  (resultCode != RESULT_OK) 일 때 tempFile 을 삭제하기 때문에
-         *  기존에 데이터가 남아 있게 되면 원치 않은 삭제가 이뤄집니다.
-         */
-        tempFile = null;
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            Bitmap originalBm = BitmapFactory.decodeFile(tempFile.getAbsolutePath(), options);
+            Log.d(TAG, "setImage : " + tempFile.getAbsolutePath());
 
+            p_picture_icon.setImageBitmap(originalBm);
+
+            /**
+             *  tempFile 사용 후 null 처리를 해줘야 합니다.
+             *  (resultCode != RESULT_OK) 일 때 tempFile 을 삭제하기 때문에
+             *  기존에 데이터가 남아 있게 되면 원치 않은 삭제가 이뤄집니다.
+             */
+            tempFile = null;
+        }
     }
 
     private void tedPermission() {
