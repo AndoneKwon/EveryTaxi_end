@@ -122,7 +122,6 @@ public class MainActivity extends AppCompatActivity
         else if (id == R.id.sign_up)
         {
             Intent intent = new Intent(getApplicationContext(), SignUpActivity.class);
-
             startActivity(intent);
         }
         else if (id == R.id.logout)

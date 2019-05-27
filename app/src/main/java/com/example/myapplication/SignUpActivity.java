@@ -134,13 +134,6 @@ public class SignUpActivity extends AppCompatActivity {
         intent.setType(MediaStore.Images.Media.CONTENT_TYPE);
         startActivityForResult(intent, PICK_FROM_ALBUM);
     }
-    private void goToAlbum2() {
-
-        Intent intent2 = new Intent(Intent.ACTION_PICK);
-        intent2.setType(MediaStore.Images.Media.CONTENT_TYPE);
-        startActivityForResult(intent2, PICK_FROM_ALBUM);
-    }
-
     /**
      *  카메라에서 이미지 가져오기
      */
