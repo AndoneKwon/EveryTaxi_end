@@ -1,6 +1,7 @@
 package com.example.myapplication;
 
 import android.app.FragmentManager;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -30,6 +31,8 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        setTitle("EveryTaxi");
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -91,20 +94,28 @@ public class MainActivity extends AppCompatActivity
 
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
+    public boolean onNavigationItemSelected(MenuItem item)
+    {
         int id = item.getItemId();
 
-        if (id == R.id.sign_in) {
-            // Handle the camera action
+        if (id == R.id.sign_in)
+        {
+            Intent intent = new Intent(getApplicationContext(), SignInActivity.class);
+
+            startActivity(intent);
         }
-        else if (id == R.id.sign_up) {
+        else if (id == R.id.sign_up)
+        {
+            Intent intent = new Intent(getApplicationContext(), SignUpActivity.class);
+
+            startActivity(intent);
+        }
+        else if (id == R.id.logout)
+        {
 
         }
-        else if (id == R.id.logout){
-
-        }
-        else if(id == R.id.destination) {
+        else if(id == R.id.destination)
+        {
 
         }
 

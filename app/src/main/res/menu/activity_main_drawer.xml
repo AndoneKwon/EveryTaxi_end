@@ -7,19 +7,19 @@
         <item
             android:id="@+id/sign_in"
             android:icon="@drawable/signin"
-            android:title="SignIn" />
+            android:title="로그인" />
         <item
             android:id="@+id/sign_up"
             android:icon="@drawable/signup"
-            android:title="SignUp" />
+            android:title="회원가입" />
         <item
             android:id="@+id/logout"
             android:icon="@drawable/logout"
-            android:title="LogOut" />
+            android:title="로그아웃" />
         <item
             android:id="@+id/destination"
             android:icon="@drawable/destination"
-            android:title="목적지지정" />
+            android:title="목적지 선택" />
     </group>
 
 </menu>
