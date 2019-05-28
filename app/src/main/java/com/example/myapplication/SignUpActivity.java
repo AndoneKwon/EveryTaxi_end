@@ -31,13 +31,14 @@ public class SignUpActivity extends AppCompatActivity {
     ImageView p_picture_icon;
     Button select_s_card;
     Button select_p_picture;
+    Button sign_up_okay;
 
     private Boolean isPermission = true;
-    private static final String TAG = "blackjin";
+    private static final String TAG = "EveryTaxi";
     private static final int PICK_FROM_ALBUM = 1;
-    private static final int PICK_FROM_CAMERA = 2;
-    private File tempFile;
-    int select=0;
+    private File s_card_tempFile;
+    private File p_picture_tempFile;
+    int select = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,6 +50,7 @@ public class SignUpActivity extends AppCompatActivity {
 
         select_s_card = (Button) findViewById(R.id.select_s_card);
         select_p_picture = (Button) findViewById(R.id.select_p_picture);
+        sign_up_okay = (Button) findViewById(R.id.sign_up_okay);
 
         select_s_card.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -64,26 +66,43 @@ public class SignUpActivity extends AppCompatActivity {
                 goToAlbum();
             }
         });
+
+        sign_up_okay.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+               // File s_card_file = new File();
+            }
+        });
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode != Activity.RESULT_OK) {
             Toast.makeText(this, "취소 되었습니다.", Toast.LENGTH_SHORT).show();
-
-            if(tempFile != null) {
-                if (tempFile.exists()) {
-                    if (tempFile.delete()) {
-                        Log.e(TAG, tempFile.getAbsolutePath() + " 삭제 성공");
-                        tempFile = null;
+            if(select==0){
+                if(s_card_tempFile != null) {
+                    if (s_card_tempFile.exists()) {
+                        if (s_card_tempFile.delete()) {
+                            Log.e(TAG, s_card_tempFile.getAbsolutePath() + " 삭제 성공");
+                            s_card_tempFile = null;
+                        }
                     }
                 }
             }
-
+            else{
+                if(p_picture_tempFile != null) {
+                    if (p_picture_tempFile.exists()) {
+                        if (p_picture_tempFile.delete()) {
+                            Log.e(TAG, p_picture_tempFile.getAbsolutePath() + " 삭제 성공");
+                            p_picture_tempFile = null;
+                        }
+                    }
+                }
+            }
             return;
         }
 
-        if (requestCode == PICK_FROM_ALBUM) {
+        else {
 
             Uri photoUri = data.getData();
             Log.d(TAG, "PICK_FROM_ALBUM photoUri : " + photoUri);
@@ -92,10 +111,6 @@ public class SignUpActivity extends AppCompatActivity {
 
             try {
 
-                /*
-                 *  Uri 스키마를
-                 *  content:/// 에서 file:/// 로  변경한다.
-                 */
                 String[] proj = { MediaStore.Images.Media.DATA };
 
                 assert photoUri != null;
@@ -106,19 +121,24 @@ public class SignUpActivity extends AppCompatActivity {
 
                 cursor.moveToFirst();
 
-                tempFile = new File(cursor.getString(column_index));
+                if (select == 0)
+                {
+                    s_card_tempFile = new File(cursor.getString(column_index));
+                    Log.d(TAG, "s_card_tempFile Uri : " + Uri.fromFile(s_card_tempFile));
 
-                Log.d(TAG, "tempFile Uri : " + Uri.fromFile(tempFile));
+                }
+                else
+                {
+                    p_picture_tempFile = new File(cursor.getString(column_index));
+                    Log.d(TAG, "p_picture_tempFile Uri : " + Uri.fromFile(p_picture_tempFile));
+
+                }
 
             } finally {
                 if (cursor != null) {
                     cursor.close();
                 }
             }
-
-            setImage();
-
-        } else if (requestCode == PICK_FROM_CAMERA) {
 
             setImage();
 
@@ -134,38 +154,15 @@ public class SignUpActivity extends AppCompatActivity {
         intent.setType(MediaStore.Images.Media.CONTENT_TYPE);
         startActivityForResult(intent, PICK_FROM_ALBUM);
     }
-    /**
-     *  카메라에서 이미지 가져오기
-     */
-    private void takePhoto() {
-
-        Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-
-        try {
-            tempFile = createImageFile();
-        } catch (IOException e) {
-            Toast.makeText(this, "이미지 처리 오류! 다시 시도해주세요.", Toast.LENGTH_SHORT).show();
-            finish();
-            e.printStackTrace();
-        }
-        if (tempFile != null) {
-
-            Uri photoUri = Uri.fromFile(tempFile);
-            intent.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
-            startActivityForResult(intent, PICK_FROM_CAMERA);
-        }
-    }
 
     /**
      *  폴더 및 파일 만들기
      */
     private File createImageFile() throws IOException {
 
-        // 이미지 파일 이름 ( blackJin_{시간}_ )
         String timeStamp = new SimpleDateFormat("HHmmss").format(new Date());
         String imageFileName = "blackJin_" + timeStamp + "_";
 
-        // 이미지가 저장될 폴더 이름 ( blackJin )
         File storageDir = new File(Environment.getExternalStorageDirectory() + "/blackJin/");
         if (!storageDir.exists()) storageDir.mkdirs();
 
@@ -184,8 +181,8 @@ public class SignUpActivity extends AppCompatActivity {
             s_card_icon = findViewById(R.id.s_card_icon);
 
             BitmapFactory.Options options = new BitmapFactory.Options();
-            Bitmap originalBm = BitmapFactory.decodeFile(tempFile.getAbsolutePath(), options);
-            Log.d(TAG, "setImage : " + tempFile.getAbsolutePath());
+            Bitmap originalBm = BitmapFactory.decodeFile(s_card_tempFile.getAbsolutePath(), options);
+            Log.d(TAG, "setImage : " + s_card_tempFile.getAbsolutePath());
 
             s_card_icon.setImageBitmap(originalBm);
 
@@ -194,14 +191,14 @@ public class SignUpActivity extends AppCompatActivity {
              *  (resultCode != RESULT_OK) 일 때 tempFile 을 삭제하기 때문에
              *  기존에 데이터가 남아 있게 되면 원치 않은 삭제가 이뤄집니다.
              */
-            tempFile = null;
+            s_card_tempFile = null;
         }
         else{
             p_picture_icon = findViewById(R.id.p_picture_icon);
 
             BitmapFactory.Options options = new BitmapFactory.Options();
-            Bitmap originalBm = BitmapFactory.decodeFile(tempFile.getAbsolutePath(), options);
-            Log.d(TAG, "setImage : " + tempFile.getAbsolutePath());
+            Bitmap originalBm = BitmapFactory.decodeFile(p_picture_tempFile.getAbsolutePath(), options);
+            Log.d(TAG, "setImage : " + p_picture_tempFile.getAbsolutePath());
 
             p_picture_icon.setImageBitmap(originalBm);
 
@@ -210,7 +207,7 @@ public class SignUpActivity extends AppCompatActivity {
              *  (resultCode != RESULT_OK) 일 때 tempFile 을 삭제하기 때문에
              *  기존에 데이터가 남아 있게 되면 원치 않은 삭제가 이뤄집니다.
              */
-            tempFile = null;
+            p_picture_tempFile = null;
         }
     }
 
