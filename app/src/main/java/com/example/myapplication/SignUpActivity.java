@@ -14,14 +14,23 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.gun0912.tedpermission.PermissionListener;
 import com.gun0912.tedpermission.TedPermission;
 
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -40,11 +49,21 @@ public class SignUpActivity extends AppCompatActivity {
     private File p_picture_tempFile;
     int select = 0;
 
+    String target = "https://everytaxi95.cafe24.com/sign_up_action.php";
+    String username;
+    String password;
+    String confirm;
+    String result;
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.sign_up);
         setTitle("회원가입");
+
+        SSLConnect ssl = new SSLConnect();
+        ssl.postHttps("https://everytaxi95.cafe24.com", 1000, 1000);
 
         tedPermission();
 
@@ -52,34 +71,148 @@ public class SignUpActivity extends AppCompatActivity {
         select_p_picture = (Button) findViewById(R.id.select_p_picture);
         sign_up_okay = (Button) findViewById(R.id.sign_up_okay);
 
-        select_s_card.setOnClickListener(new View.OnClickListener() {
+        select_s_card.setOnClickListener(new View.OnClickListener()
+        {
             @Override
-            public void onClick(View v) {
-                select=0;
-                goToAlbum();
-            }
-        });
-        select_p_picture.setOnClickListener(new View.OnClickListener(){
-            @Override
-            public void onClick(View v){
-                select=1;
+            public void onClick(View v)
+            {
+                select = 0;
                 goToAlbum();
             }
         });
 
-        sign_up_okay.setOnClickListener(new View.OnClickListener() {
+        select_p_picture.setOnClickListener(new View.OnClickListener()
+        {
             @Override
-            public void onClick(View v) {
-               // File s_card_file = new File();
+            public void onClick(View v){
+                select = 1;
+                goToAlbum();
             }
         });
+
+        sign_up_okay.setOnClickListener(new View.OnClickListener()
+        {
+            @Override
+            public void onClick(View v)
+            {
+                new Thread() {
+                    public void run()
+                    {
+                        DoFileUpload(target, s_card_tempFile.getAbsolutePath());
+
+                        DoFileUpload(target, p_picture_tempFile.getAbsolutePath());
+                    }
+                }.start();
+            }
+        });
+    }
+
+    public void DoFileUpload(String apiUrl, String absolutePath)
+    {
+        HttpFileUpload(apiUrl, "", absolutePath);
+    }
+
+    public void HttpFileUpload(String urlString, String params, String fileName)
+    {
+        String lineEnd = "\r\n";
+        String twoHyphens = "--";
+        String boundary = "*****";
+
+        try
+        {
+            File sourceFile = new File(fileName);
+            DataOutputStream dos;
+
+            if (!sourceFile.isFile())
+            {
+                Log.e("uploadFile", "Source File not exist :" + fileName);
+            }
+            else
+            {
+                FileInputStream mFileInputStream = new FileInputStream(sourceFile);
+
+                URL connectUrl = new URL(urlString);
+
+                HttpURLConnection conn = (HttpURLConnection) connectUrl.openConnection();
+
+                conn.setDoInput(true);
+                conn.setDoOutput(true);
+                conn.setUseCaches(false);
+                conn.setRequestMethod("POST");
+                conn.setRequestProperty("Connection", "Keep-Alive");
+                conn.setRequestProperty("ENCTYPE", "multipart/form-data");
+                conn.setRequestProperty("Content-Type", "multipart/form-data;boundary=" + boundary);
+                conn.setRequestProperty("uploaded_file", fileName);
+
+                dos = new DataOutputStream(conn.getOutputStream());
+                dos.writeBytes(twoHyphens + boundary + lineEnd);
+                dos.writeBytes("Content-Disposition: form-data; name=\"uploaded_file\";filename=\"" + fileName + "\"" + lineEnd);
+                dos.writeBytes(lineEnd);
+
+                int bytesAvailable = mFileInputStream.available();
+                int maxBufferSize = 1024 * 1024;
+                int bufferSize = Math.min(bytesAvailable, maxBufferSize);
+
+                byte[] buffer = new byte[bufferSize];
+                int bytesRead = mFileInputStream.read(buffer, 0, bufferSize);
+
+                while (bytesRead > 0)
+                {
+                    dos.write(buffer, 0, bufferSize);
+                    bytesAvailable = mFileInputStream.available();
+                    bufferSize = Math.min(bytesAvailable, maxBufferSize);
+                    bytesRead = mFileInputStream.read(buffer, 0, bufferSize);
+                }
+
+                dos.writeBytes(lineEnd);
+                dos.writeBytes(twoHyphens + boundary + twoHyphens + lineEnd);
+
+                mFileInputStream.close();
+                dos.flush();
+
+                username = ((EditText)(findViewById(R.id.username))).getText().toString();
+                password = ((EditText)(findViewById(R.id.password))).getText().toString();
+                confirm = ((EditText)(findViewById(R.id.confirm))).getText().toString();
+
+                StringBuffer user_buffer = new StringBuffer();
+
+                user_buffer.append("username").append("=").append(username).append("&");
+                user_buffer.append("password").append("=").append(password);
+
+                OutputStreamWriter outStream = new OutputStreamWriter(conn.getOutputStream(), "EUC-KR");
+                PrintWriter writer = new PrintWriter(outStream);
+
+                writer.write(user_buffer.toString());
+                writer.flush();
+
+                if (conn.getResponseCode() == 200)
+                {
+                    InputStreamReader tmp = new InputStreamReader(conn.getInputStream(), "UTF-8");
+                    BufferedReader reader = new BufferedReader(tmp);
+                    StringBuffer stringBuffer = new StringBuffer();
+                    String line;
+
+                    line = reader.readLine();
+
+                    sign_up_okay.setText(line); // 이미지 전송은 구현, 아이디 비밀번호는 미구현
+                }
+
+                mFileInputStream.close();
+
+                dos.close();
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode != Activity.RESULT_OK) {
             Toast.makeText(this, "취소 되었습니다.", Toast.LENGTH_SHORT).show();
-            if(select==0){
+            if(select == 0){
                 if(s_card_tempFile != null) {
                     if (s_card_tempFile.exists()) {
                         if (s_card_tempFile.delete()) {
@@ -125,13 +258,11 @@ public class SignUpActivity extends AppCompatActivity {
                 {
                     s_card_tempFile = new File(cursor.getString(column_index));
                     Log.d(TAG, "s_card_tempFile Uri : " + Uri.fromFile(s_card_tempFile));
-
                 }
                 else
                 {
                     p_picture_tempFile = new File(cursor.getString(column_index));
                     Log.d(TAG, "p_picture_tempFile Uri : " + Uri.fromFile(p_picture_tempFile));
-
                 }
 
             } finally {
@@ -145,9 +276,6 @@ public class SignUpActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     *  앨범에서 이미지 가져오기
-     */
     private void goToAlbum() {
 
         Intent intent = new Intent(Intent.ACTION_PICK);
@@ -155,9 +283,6 @@ public class SignUpActivity extends AppCompatActivity {
         startActivityForResult(intent, PICK_FROM_ALBUM);
     }
 
-    /**
-     *  폴더 및 파일 만들기
-     */
     private File createImageFile() throws IOException {
 
         String timeStamp = new SimpleDateFormat("HHmmss").format(new Date());
@@ -173,9 +298,6 @@ public class SignUpActivity extends AppCompatActivity {
         return image;
     }
 
-    /**
-     *  tempFile 을 bitmap 으로 변환 후 ImageView 에 설정한다.
-     */
     private void setImage() {
         if(select==0){
             s_card_icon = findViewById(R.id.s_card_icon);
@@ -185,13 +307,6 @@ public class SignUpActivity extends AppCompatActivity {
             Log.d(TAG, "setImage : " + s_card_tempFile.getAbsolutePath());
 
             s_card_icon.setImageBitmap(originalBm);
-
-            /**
-             *  tempFile 사용 후 null 처리를 해줘야 합니다.
-             *  (resultCode != RESULT_OK) 일 때 tempFile 을 삭제하기 때문에
-             *  기존에 데이터가 남아 있게 되면 원치 않은 삭제가 이뤄집니다.
-             */
-            s_card_tempFile = null;
         }
         else{
             p_picture_icon = findViewById(R.id.p_picture_icon);
@@ -201,13 +316,6 @@ public class SignUpActivity extends AppCompatActivity {
             Log.d(TAG, "setImage : " + p_picture_tempFile.getAbsolutePath());
 
             p_picture_icon.setImageBitmap(originalBm);
-
-            /**
-             *  tempFile 사용 후 null 처리를 해줘야 합니다.
-             *  (resultCode != RESULT_OK) 일 때 tempFile 을 삭제하기 때문에
-             *  기존에 데이터가 남아 있게 되면 원치 않은 삭제가 이뤄집니다.
-             */
-            p_picture_tempFile = null;
         }
     }
 
@@ -235,7 +343,6 @@ public class SignUpActivity extends AppCompatActivity {
                 .setDeniedMessage(getResources().getString(R.string.permission_1))
                 .setPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA)
                 .check();
-
     }
 }
 
