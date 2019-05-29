@@ -45,10 +45,11 @@ public class SignUpActivity extends AppCompatActivity {
     private Boolean isPermission = true;
     private static final String TAG = "EveryTaxi";
     private static final int PICK_FROM_ALBUM = 1;
-    private File s_card_tempFile;
-    private File p_picture_tempFile;
+    private File s_card_tempFile = null;
+    private File p_picture_tempFile = null;
     int select = 0;
 
+    String root_url = "https://everytaxi95.cafe24.com";
     String target = "https://everytaxi95.cafe24.com/sign_up_action.php";
     String username;
     String password;
@@ -63,7 +64,7 @@ public class SignUpActivity extends AppCompatActivity {
         setTitle("회원가입");
 
         SSLConnect ssl = new SSLConnect();
-        ssl.postHttps("https://everytaxi95.cafe24.com", 1000, 1000);
+        ssl.postHttps(root_url, 1000, 1000);
 
         tedPermission();
 
@@ -95,14 +96,35 @@ public class SignUpActivity extends AppCompatActivity {
             @Override
             public void onClick(View v)
             {
-                new Thread() {
-                    public void run()
-                    {
-                        DoFileUpload(target, s_card_tempFile.getAbsolutePath());
+                username = ((EditText) (findViewById(R.id.username))).getText().toString();
+                password = ((EditText) (findViewById(R.id.password))).getText().toString();
+                confirm = ((EditText) (findViewById(R.id.confirm))).getText().toString();
 
-                        DoFileUpload(target, p_picture_tempFile.getAbsolutePath());
-                    }
-                }.start();
+                if (username.length() == 0 || password.length() == 0 || confirm.length() == 0)
+                {
+                    Toast.makeText(SignUpActivity.this, "빈칸을 모두 작성해주세요.", Toast.LENGTH_SHORT).show();
+                }
+                else if (!password.equals(confirm))
+                {
+                    Toast.makeText(SignUpActivity.this, "비밀번호와 확인이 일치하지 않습니다.", Toast.LENGTH_SHORT).show();
+                }
+                else if (s_card_tempFile == null || p_picture_tempFile == null)
+                {
+                    Toast.makeText(SignUpActivity.this, "사진을 등록해주세요.", Toast.LENGTH_SHORT).show();
+
+                }
+                else
+                {
+                    new Thread() {
+                        public void run()
+                        {
+                            DoFileUpload(target, s_card_tempFile.getAbsolutePath());
+
+                            DoFileUpload(target, p_picture_tempFile.getAbsolutePath());
+                        }
+                    }.start();
+                }
+
             }
         });
     }
@@ -170,21 +192,6 @@ public class SignUpActivity extends AppCompatActivity {
                 mFileInputStream.close();
                 dos.flush();
 
-                username = ((EditText)(findViewById(R.id.username))).getText().toString();
-                password = ((EditText)(findViewById(R.id.password))).getText().toString();
-                confirm = ((EditText)(findViewById(R.id.confirm))).getText().toString();
-
-                StringBuffer user_buffer = new StringBuffer();
-
-                user_buffer.append("username").append("=").append(username).append("&");
-                user_buffer.append("password").append("=").append(password);
-
-                OutputStreamWriter outStream = new OutputStreamWriter(conn.getOutputStream(), "EUC-KR");
-                PrintWriter writer = new PrintWriter(outStream);
-
-                writer.write(user_buffer.toString());
-                writer.flush();
-
                 if (conn.getResponseCode() == 200)
                 {
                     InputStreamReader tmp = new InputStreamReader(conn.getInputStream(), "UTF-8");
@@ -193,8 +200,6 @@ public class SignUpActivity extends AppCompatActivity {
                     String line;
 
                     line = reader.readLine();
-
-                    sign_up_okay.setText(line); // 이미지 전송은 구현, 아이디 비밀번호는 미구현
                 }
 
                 mFileInputStream.close();
