@@ -40,12 +40,14 @@
             android:id="@+id/password"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:inputType="textPassword"
             android:hint="비밀번호"/>
 
         <EditText
             android:id="@+id/confirm"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:inputType="textPassword"
             android:hint="비밀번호 확인"/>
 
     </LinearLayout>
