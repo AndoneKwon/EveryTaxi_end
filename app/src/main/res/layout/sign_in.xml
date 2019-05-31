@@ -15,20 +15,31 @@
         android:src="@drawable/logo"/>
 
     <EditText
+        android:id="@+id/sign_in_username"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="아이디"/>
 
     <EditText
+        android:id="@+id/sign_in_password"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:inputType="textPassword"
         android:hint="비밀번호"/>
 
-    <Button
+    <TextView
+        android:id="@+id/sign_in_help_msg"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="30dp"
+        android:textColor="#FF0000"
+        android:text=""
+        android:textAlignment="center"/>
+
+    <Button
+        android:id="@+id/sign_in_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:layout_marginLeft="30dp"
         android:layout_marginRight="30dp"
         android:text="로그인"/>

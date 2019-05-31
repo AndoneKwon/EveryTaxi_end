@@ -5,6 +5,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="top"
+    android:paddingTop="10dp"
     android:paddingLeft="30dp"
     android:paddingRight="30dp">
 
@@ -12,23 +13,27 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:gravity="center">
+        android:gravity="center_vertical">
 
-        <TextView
-            android:layout_width="wrap_content"
+        <ImageView
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="SIGN UP"
-            android:textSize="50dp"
-            android:textStyle="bold|italic"/>
+            android:src="@drawable/sign_up"/>
 
     </LinearLayout>
     
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="2"
+        android:layout_weight="3"
         android:orientation="vertical"
         android:gravity="center">
+
+        <EditText
+            android:id="@+id/s_number"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="학번"/>
 
         <EditText
             android:id="@+id/username"
@@ -101,7 +106,16 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:gravity="top">
+        android:gravity="top"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/help_msg"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#FF0000"
+            android:text=""
+            android:textAlignment="center"/>
 
         <Button
             android:id="@+id/sign_up_okay"
