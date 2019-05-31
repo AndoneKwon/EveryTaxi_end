@@ -53,7 +53,7 @@ public class SignInActivity extends AppCompatActivity {
 
                 if (username.length() == 0 || password.length() == 0)
                 {
-                    Toast.makeText(SignInActivity.this, "아이디와 비밀번호를 입력해주세요.", Toast.LENGTH_SHORT).show();
+                    help_msg.setText("아이디와 비밀번호를 입력해주세요.");
                 }
                 else
                 {
@@ -144,6 +144,8 @@ public class SignInActivity extends AppCompatActivity {
                 Log.i("통신 결과 : ", conn.getResponseCode() + " 에러");
 
                 result = "Connection Error";
+
+                Toast.makeText(this, "서버와의 연결에 문제가 발생했습니다.", Toast.LENGTH_SHORT).show();
             }
         }
         catch (Exception e)
@@ -151,6 +153,8 @@ public class SignInActivity extends AppCompatActivity {
             e.printStackTrace();
 
             result = "Exception Error";
+
+            Toast.makeText(this, "오류가 발생했습니다. 다시 시도해주세요.", Toast.LENGTH_SHORT).show();
         }
 
         return result;
