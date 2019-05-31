@@ -5,19 +5,19 @@
 
     <group android:checkableBehavior="single">
         <item
-            android:id="@+id/sign_in"
+            android:id="@+id/sign_in_menu"
             android:icon="@drawable/signin"
             android:title="로그인" />
         <item
-            android:id="@+id/sign_up"
+            android:id="@+id/sign_up_menu"
             android:icon="@drawable/signup"
             android:title="회원가입" />
         <item
-            android:id="@+id/logout"
+            android:id="@+id/logout_menu"
             android:icon="@drawable/logout"
             android:title="로그아웃" />
         <item
-            android:id="@+id/destination"
+            android:id="@+id/destination_menu"
             android:icon="@drawable/destination"
             android:title="목적지 선택" />
     </group>

@@ -1,6 +1,7 @@
 package com.example.myapplication;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -29,12 +30,29 @@ public class SignInActivity extends AppCompatActivity {
     String result;
     TextView help_msg;
 
+    String sign_up_complete;
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.sign_in);
         setTitle("로그인");
+
+        SharedPreferences sharedPreferences = getSharedPreferences("cookie",MODE_PRIVATE);
+
+        sign_up_complete = sharedPreferences.getString("sign_up_complete", "");
+
+        if (sign_up_complete.equals("Complete"))
+        {
+            Toast.makeText(this, "성공적으로 가입되었습니다. 감사합니다.", Toast.LENGTH_SHORT).show();
+
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+
+            editor.remove("sign_up_complete");
+
+            editor.commit();
+        }
 
         SSLConnect ssl = new SSLConnect();
         ssl.postHttps(root_url, 1000, 1000);
@@ -69,6 +87,8 @@ public class SignInActivity extends AppCompatActivity {
                                 Intent intent = new Intent(getApplicationContext(), MainActivity.class);
 
                                 startActivity(intent);
+
+                                finish();
                             }
                             else if (result.equals("Connection Error"))
                             {
@@ -137,15 +157,24 @@ public class SignInActivity extends AppCompatActivity {
 
                 result = buffer.toString();
 
-                Log.d(TAG, "Inner Result : " + result);
+                if (result.equals("Success")) // 사용자 쿠키 굽기
+                {
+                    SharedPreferences sharedPreferences = getSharedPreferences("cookie",MODE_PRIVATE);
+
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+
+                    editor.putString("username", username);
+
+                    editor.putString("hello_msg", "Hello");
+
+                    editor.commit();
+                }
             }
             else
             {
                 Log.i("통신 결과 : ", conn.getResponseCode() + " 에러");
 
                 result = "Connection Error";
-
-                Toast.makeText(this, "서버와의 연결에 문제가 발생했습니다.", Toast.LENGTH_SHORT).show();
             }
         }
         catch (Exception e)
@@ -153,8 +182,6 @@ public class SignInActivity extends AppCompatActivity {
             e.printStackTrace();
 
             result = "Exception Error";
-
-            Toast.makeText(this, "오류가 발생했습니다. 다시 시도해주세요.", Toast.LENGTH_SHORT).show();
         }
 
         return result;

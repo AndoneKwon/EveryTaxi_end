@@ -3,6 +3,7 @@ package com.example.myapplication;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -149,6 +150,12 @@ public class SignUpActivity extends AppCompatActivity
                                 Intent intent = new Intent(getApplicationContext(), SignInActivity.class);
 
                                 startActivity(intent);
+
+                                finish();
+                            }
+                            else if (result.equals("Duplicate"))
+                            {
+                                help_msg.setText("이미 사용 중인 아이디입니다.");
                             }
                             else if (result.equals("Connection Error"))
                             {
@@ -199,6 +206,17 @@ public class SignUpActivity extends AppCompatActivity
                 }
 
                 result = buffer.toString();
+
+                if (result.equals("Success"))
+                {
+                    SharedPreferences sharedPreferences = getSharedPreferences("cookie",MODE_PRIVATE);
+
+                    SharedPreferences.Editor editor = sharedPreferences.edit();
+
+                    editor.putString("sign_up_complete", "Complete");
+
+                    editor.commit();
+                }
             }
             else
             {
