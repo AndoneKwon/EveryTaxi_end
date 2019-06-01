@@ -504,7 +504,7 @@ public class SignUpActivity extends AppCompatActivity
     }
 
     private void setImage() {
-        if(select==0){
+        if(select == 0){
             s_card_icon = findViewById(R.id.s_card_icon);
 
             BitmapFactory.Options options = new BitmapFactory.Options();
