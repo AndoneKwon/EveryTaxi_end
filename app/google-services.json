@@ -1,0 +1,56 @@
+{
+  "project_info": {
+    "project_number": "472404065112",
+    "firebase_url": "https://everytaxi-d05ed.firebaseio.com",
+    "project_id": "everytaxi-d05ed",
+    "storage_bucket": "everytaxi-d05ed.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:472404065112:android:13c3c6a65bcbec53",
+        "android_client_info": {
+          "package_name": "com.example.myapplication"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "472404065112-5l9321vm020mqlkoi079id224lepd74c.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.myapplication",
+            "certificate_hash": "181c9229dc71adf9c85154d72747960db9eda07a"
+          }
+        },
+        {
+          "client_id": "472404065112-9t2bmhh3uke4lqgi6qbo0cqmr001rdlt.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.myapplication",
+            "certificate_hash": "7c7c14bb80f8551264007b03a73f7d13a3994750"
+          }
+        },
+        {
+          "client_id": "472404065112-hpq7a6c83ajptllig8u2imcbi2el5mri.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCnf5fli2mj4JsCsbCeR9tX2WOkEu-gQUU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "472404065112-hpq7a6c83ajptllig8u2imcbi2el5mri.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
