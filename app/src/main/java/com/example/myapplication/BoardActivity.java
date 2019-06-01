@@ -25,9 +25,11 @@ public class BoardActivity extends AppCompatActivity
     String src_name;
     Button make_room;
     String username;
+    String show_room_url = "https://everytaxi95.cafe24.com/show_room.php";
     String make_room_url = "https://everytaxi95.cafe24.com/make_room.php";
     String result;
     String dest;
+    String room_list;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -40,6 +42,14 @@ public class BoardActivity extends AppCompatActivity
         src_name = intent.getStringExtra("src_name");
 
         setTitle("출발지 : " + src_name);
+
+        new Thread()
+        {
+            public void run()
+            {
+                room_list = HttpShowRoom(make_room_url, "", src_name);
+            }
+        }.start();
 
         final String[] creator = {"TEST", "AFSDF", "ASDASD"};
 
@@ -113,7 +123,6 @@ public class BoardActivity extends AppCompatActivity
 
                             dialogInterface.dismiss();
 
-                            /*
                             new Thread()
                             {
                                 public void run()
@@ -121,8 +130,6 @@ public class BoardActivity extends AppCompatActivity
                                     result = HttpMakeRoom(make_room_url, "", username, src_name, dest);
                                 }
                             }.start();
-
-                            */
                         }
                     });
 
@@ -132,6 +139,58 @@ public class BoardActivity extends AppCompatActivity
                 }
             }
         });
+    }
+
+    public String HttpShowRoom(String urlString, String params, String src)
+    {
+        String send_msg = "";
+        String tmp_str = "";
+        String result = "";
+
+        try
+        {
+            URL connectUrl = new URL(urlString);
+
+            HttpURLConnection conn = (HttpURLConnection) connectUrl.openConnection();
+
+            conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+            conn.setRequestMethod("POST");
+
+            OutputStreamWriter osw = new OutputStreamWriter(conn.getOutputStream());
+
+            send_msg = "src=" + src;
+
+            osw.write(send_msg);
+            osw.flush();
+
+            if (conn.getResponseCode() == conn.HTTP_OK)
+            {
+                InputStreamReader tmp = new InputStreamReader(conn.getInputStream(), "UTF-8");
+                BufferedReader reader = new BufferedReader(tmp);
+                StringBuffer buffer = new StringBuffer();
+
+                while ((tmp_str = reader.readLine()) != null)
+                {
+                    buffer.append(tmp_str);
+                }
+
+                result = buffer.toString();
+            }
+            else
+            {
+                Log.i("통신 결과 : ", conn.getResponseCode() + " 에러");
+
+                result = "Connection Error";
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+
+            result = "Exception Error";
+        }
+
+        return result;
     }
 
     public String HttpMakeRoom(String urlString, String params, String username, String src, String dest)
@@ -168,19 +227,6 @@ public class BoardActivity extends AppCompatActivity
                 }
 
                 result = buffer.toString();
-
-                if (result.equals("Exist")) // 이미 들어가있는 방이 있는 경우
-                {
-                    SharedPreferences sharedPreferences = getSharedPreferences("cookie",MODE_PRIVATE);
-
-                    SharedPreferences.Editor editor = sharedPreferences.edit();
-
-                    editor.putString("username", username);
-
-                    editor.putString("hello_msg", "Hello");
-
-                    editor.commit();
-                }
             }
             else
             {
