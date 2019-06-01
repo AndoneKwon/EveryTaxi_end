@@ -1,5 +1,6 @@
 package com.example.myapplication;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
@@ -18,7 +19,7 @@ import java.util.Random;
 
 
 public class MessageActivity extends AppCompatActivity {
-    String userName;
+    String username;
     ListView listView;
     EditText editText;
     Button sendButton;
@@ -39,7 +40,8 @@ public class MessageActivity extends AppCompatActivity {
         editText = (EditText) findViewById(R.id.editText);
         sendButton = (Button) findViewById(R.id.button);
 
-        userName = "user";  // 랜덤한 유저 이름 설정 ex) user1234
+        SharedPreferences sharedPreferences = getSharedPreferences("cookie",MODE_PRIVATE);
+        username = sharedPreferences.getString("username", "");
 
 // 기본 Text를 담을 수 있는 simple_list_item_1을 사용해서 ArrayAdapter를 만들고 listview에 설정
         adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, android.R.id.text1);
@@ -50,7 +52,7 @@ public class MessageActivity extends AppCompatActivity {
             @Override
             public void onClick(View v)
             {
-                ChatData chatData = new ChatData(userName, editText.getText().toString());  // 유저 이름과 메세지로 chatData 만들기
+                ChatData chatData = new ChatData(username, editText.getText().toString());  // 유저 이름과 메세지로 chatData 만들기
                 myRef.child("message").push().setValue(chatData);  // 기본 database 하위 message라는 child에 chatData를 list로 만들기
                 editText.setText("");
                 // message는 child의 이벤트를 수신합니다.
