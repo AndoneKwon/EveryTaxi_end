@@ -180,10 +180,6 @@ public class MainActivity extends AppCompatActivity
 
             finish();
         }
-        else if(id == R.id.destination_menu)
-        {
-
-        }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
