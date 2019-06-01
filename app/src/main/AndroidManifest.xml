@@ -34,6 +34,7 @@
 
         <activity android:name=".SignInActivity" android:label="로그인"/>
         <activity android:name=".SignUpActivity" android:label="회원가입"/>
+        <activity android:name=".MessageActivity" android:label="회원가입"/>
     </application>
 
 </manifest>

@@ -180,6 +180,12 @@ public class MainActivity extends AppCompatActivity
 
             finish();
         }
+        else if (id == R.id.test)
+        {
+            Intent intent = new Intent(getApplicationContext(), MessageActivity.class);
+
+            startActivity(intent);
+        }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
