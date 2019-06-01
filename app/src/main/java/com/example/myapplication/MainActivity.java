@@ -26,19 +26,22 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener
-        , OnMapReadyCallback{
-
+        , OnMapReadyCallback
+{
     String username;
     String hello_msg;
+    String src_name;
     NavigationView sidebar;
     Menu sidebar_menu;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         setTitle("EveryTaxi");
@@ -188,15 +191,48 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onMapReady(final GoogleMap map) {
 
-        LatLng SEOUL = new LatLng(37.56, 126.97);
+        LatLng Gongneung = new LatLng(37.625593, 127.073196);
+        LatLng Hagye = new LatLng(37.636088, 127.068692);
+        LatLng Seokgye = new LatLng(37.615198, 127.066089);
+        LatLng Taerung = new LatLng(37.617666, 127.075463);
 
-        MarkerOptions markerOptions = new MarkerOptions();
-        markerOptions.position(SEOUL);
-        markerOptions.title("서울");
-        markerOptions.snippet("한국의 수도");
-        map.addMarker(markerOptions);
+        MarkerOptions markerOptions_G = new MarkerOptions();
+        markerOptions_G.position(Gongneung);
+        markerOptions_G.title("공릉역");
+        map.addMarker(markerOptions_G);
 
-        map.moveCamera(CameraUpdateFactory.newLatLng(SEOUL));
-        map.animateCamera(CameraUpdateFactory.zoomTo(10));
+        MarkerOptions markerOptions_H = new MarkerOptions();
+        markerOptions_H.position(Hagye);
+        markerOptions_H.title("하계역");
+        map.addMarker(markerOptions_H);
+
+        MarkerOptions markerOptions_S = new MarkerOptions();
+        markerOptions_S.position(Seokgye);
+        markerOptions_S.title("석계역");
+        map.addMarker(markerOptions_S);
+
+        MarkerOptions markerOptions_T = new MarkerOptions();
+        markerOptions_T.position(Taerung);
+        markerOptions_T.title("태릉입구역");
+        map.addMarker(markerOptions_T);
+
+        map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener()
+        {
+            @Override
+            public boolean onMarkerClick(Marker marker)
+            {
+                src_name = marker.getTitle();
+
+                Intent intent = new Intent(getApplicationContext(), BoardActivity.class);
+
+                intent.putExtra("src_name", src_name);
+
+                startActivity(intent);
+
+                return false;
+            }
+        });
+        map.moveCamera(CameraUpdateFactory.newLatLng(Gongneung));
+        map.animateCamera(CameraUpdateFactory.zoomTo(14));
     }
 }
