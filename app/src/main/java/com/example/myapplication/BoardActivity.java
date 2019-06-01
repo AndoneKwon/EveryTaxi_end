@@ -239,16 +239,6 @@ public class BoardActivity extends AppCompatActivity
                                     user_str = HttpShowUser(show_user_url, "", thread_room_number);
                                 }
 
-                                /*
-
-                                SharedPreferences.Editor editor = sharedPreferences.edit();
-
-                                editor.remove("room_number");
-
-                                editor.commit();
-
-                                */
-
                                 this.notify();
                             }
                         }
@@ -339,6 +329,14 @@ public class BoardActivity extends AppCompatActivity
                                 e.printStackTrace();
                             }
 
+                            /*
+
+                            sharedPreferences = getSharedPreferences("cookie",MODE_PRIVATE);
+
+                            thread_room_number = sharedPreferences.getString("room_number", "");
+
+                            */
+
                             dlg = (View) View.inflate(BoardActivity.this, R.layout.user_list_dlg, null);
 
                             AlertDialog.Builder dlg_builder = new AlertDialog.Builder(BoardActivity.this);
@@ -364,14 +362,6 @@ public class BoardActivity extends AppCompatActivity
                                 tv[i].setText(user_arr[i]);
                                 img[i].setImageBitmap(bitmap[i]);
                             }
-
-                            /*
-
-                            sharedPreferences = getSharedPreferences("cookie",MODE_PRIVATE);
-
-                            thread_room_number = sharedPreferences.getString("room_number", "");
-
-                            */
 
                             dlg_builder.show();
                         }
