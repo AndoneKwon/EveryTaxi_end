@@ -329,13 +329,13 @@ public class BoardActivity extends AppCompatActivity
                                 e.printStackTrace();
                             }
 
-                            /*
+
 
                             sharedPreferences = getSharedPreferences("cookie",MODE_PRIVATE);
 
                             thread_room_number = sharedPreferences.getString("room_number", "");
 
-                            */
+
 
                             dlg = (View) View.inflate(BoardActivity.this, R.layout.user_list_dlg, null);
 
@@ -344,7 +344,13 @@ public class BoardActivity extends AppCompatActivity
                             dlg_builder.setTitle("참가자 목록");
                             dlg_builder.setIcon(R.mipmap.ic_launcher);
                             dlg_builder.setView(dlg);
-                            dlg_builder.setPositiveButton("참가", null);
+                            dlg_builder.setPositiveButton("참가", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    Intent intent = new Intent(getApplicationContext(), MessageActivity.class);
+                                    startActivity(intent);
+                                }
+                            });
                             dlg_builder.setNegativeButton("취소", null);
 
                             tv[0] = dlg.findViewById(R.id.tv1);

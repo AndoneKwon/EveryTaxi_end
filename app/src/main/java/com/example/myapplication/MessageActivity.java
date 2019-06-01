@@ -1,11 +1,14 @@
 package com.example.myapplication;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,8 +17,12 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -30,16 +37,19 @@ import java.util.Random;
 
 public class MessageActivity extends AppCompatActivity {
     String username;
+    String room_number;
     ListView listView;
     EditText editText;
     Button sendButton;
+    Button destroyButton;
+    ScrollView chatScrollView;
 
     private RecyclerView recyclerView;
 
 
     FirebaseDatabase database = FirebaseDatabase.getInstance();
-    DatabaseReference myRef = database.getReference("message");
-    mLayoutManager = new LinearLayoutManager(this);
+    DatabaseReference myRef = database.getReference("chatrooms");
+    //mLayoutManager = new LinearLayoutManager(this);
 
     protected void onCreate(Bundle savedInstanceState) {
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
@@ -50,18 +60,39 @@ public class MessageActivity extends AppCompatActivity {
                 android.R.layout.simple_list_item_1, // 한 줄에 하나의 텍스트 아이템만 보여주는 레이아웃 파일
                 android.R.id.text1  // 데이터가 저장되어 있는 ArrayList 객체
         );
-        //listView = (ListView) findViewById(R.id.listView);
+        listView = (ListView) findViewById(R.id.listView);
         editText = (EditText) findViewById(R.id.editText);
         sendButton = (Button) findViewById(R.id.button);
+        destroyButton = (Button) findViewById(R.id.destroy_button);
+        //chatScrollView = (ScrollView) findViewById(R.id.chatScrollView);
+/*
+        chatScrollView.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if( hasFocus == true ){
+                    chatScrollView.postDelayed( new Runnable(){ @Override public void run()
+                    {
+                        chatScrollView.fullScroll(View.FOCUS_DOWN);
+                    }
+                    }, 10);
+                }
 
+            }
+        });//자동으로 스크롤 포커스
 
+*/
 
+        listView.setTranscriptMode(ListView.TRANSCRIPT_MODE_ALWAYS_SCROLL);
         SharedPreferences sharedPreferences = getSharedPreferences("cookie",MODE_PRIVATE);
         username = sharedPreferences.getString("username", "");
+        room_number=sharedPreferences.getString("room_number","");//
+        Toast.makeText(getApplicationContext(),room_number,Toast.LENGTH_LONG).show();
 
 // 기본 Text를 담을 수 있는 simple_list_item_1을 사용해서 ArrayAdapter를 만들고 listview에 설정
         adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, android.R.id.text1);
-//        listView.setAdapter(adapter);
+        listView.setAdapter(adapter);
+
+        //FirebaseDatabase.getInstance().getReference().child("chatrooms").push().setValue(room_number);
 
         sendButton.setOnClickListener(new View.OnClickListener()
         {
@@ -69,23 +100,32 @@ public class MessageActivity extends AppCompatActivity {
             public void onClick(View v)
             {
                 ChatData chatData = new ChatData(username, editText.getText().toString());  // 유저 이름과 메세지로 chatData 만들기
-                myRef.child("message").push().setValue(chatData);  // 기본 database 하위 message라는 child에 chatData를 list로 만들기
+                myRef.child(room_number).child("comment").push().setValue(chatData);  // 기본 database 하위 message라는 child에 chatData를 list로 만들기
                 editText.setText("");
                 // message는 child의 이벤트를 수신합니다.
             }
         });
 
+        destroyButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                myRef.child(room_number).removeValue();
+                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
 
+                startActivity(intent);
+            }
+        });
 
         final ArrayAdapter<String> finalAdapter = adapter;
-        myRef.child("message").addChildEventListener(new ChildEventListener() {  // message는 child의 이벤트를 수신합니다.
+        myRef.child(room_number).child("comment").addChildEventListener(new ChildEventListener() {  // message는 child의 이벤트를 수신합니다.
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 ChatData chatData = dataSnapshot.getValue(ChatData.class);  // chatData를 가져오고
-                //finalAdapter.add(chatData.getUserName() + ": " + chatData.getMessage());  // adapter에 추가합니다.
-                sendButton.setEnabled(true);
-                recyclerView.setLayoutManager(new LinearLayoutManager(MessageActivity.this));
-                recyclerView.setAdapter(new RecyclerViewAdapter());
+                finalAdapter.add(chatData.getUserName() + ": " + chatData.getMessage());// adapter에 추가합니다.
+                listView.setSelection(finalAdapter.getCount() - 1);
+                //sendButton.setEnabled(true);
+                //recyclerView.setLayoutManager(new LinearLayoutManager(MessageActivity.this));
+                //recyclerView.setAdapter(new RecyclerViewAdapter());
             }
 
             @Override
@@ -109,7 +149,7 @@ public class MessageActivity extends AppCompatActivity {
     public DatabaseReference getMyRef() {
         return myRef;
     }
-
+/*
     class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
 
 
@@ -169,4 +209,5 @@ public class MessageActivity extends AppCompatActivity {
             }
         }
     }
+    */
 }
