@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="15"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/money"
+            android:layout_marginTop="100dp"
+            android:layout_width="148dp"
+            android:layout_height="30dp"
+            android:layout_gravity="center|center_vertical"
+            android:gravity="left"
+            android:textSize="20dp"
+            android:textColor="#50BCDF"
+            android:text="분할 금액 : " />
+
+        <EditText
+            android:id="@+id/edit_money"
+            android:layout_width="346dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center|clip_vertical|center_vertical"
+            android:hint="금액을 입력해 주세요"/>
+        <EditText
+            android:id="@+id/people_count"
+            android:layout_width="346dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center|clip_vertical|center_vertical"
+            android:hint="인원을 입력해 주세요"/>
+        <Button
+            android:id="@+id/calculation_button"
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="계산"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="100dp"
+            android:textSize="15dp"
+            android:textColor="#ff0000"
+            android:text="계산 금액을 본인의 계좌와 함께 채팅방에 입력해주세요.\n 금액을 받지 못하거나 하는 경우는 책임지지 않습니다."/>
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/back_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="채팅방으로 돌아가기" />
+</LinearLayout>

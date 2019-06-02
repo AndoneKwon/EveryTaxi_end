@@ -41,7 +41,7 @@ public class MessageActivity extends AppCompatActivity {
     ListView listView;
     EditText editText;
     Button sendButton;
-    Button destroyButton;
+    Button CalculateButton;
 
     FirebaseDatabase database = FirebaseDatabase.getInstance();
     DatabaseReference myRef = database.getReference("chatrooms");
@@ -54,7 +54,7 @@ public class MessageActivity extends AppCompatActivity {
         listView = (ListView) findViewById(R.id.listView);
         editText = (EditText) findViewById(R.id.editText);
         sendButton = (Button) findViewById(R.id.button);
-        destroyButton = (Button) findViewById(R.id.destroy_button);
+        CalculateButton = (Button) findViewById(R.id.calculate_chat);
 
         listView.setTranscriptMode(ListView.TRANSCRIPT_MODE_ALWAYS_SCROLL);
         SharedPreferences sharedPreferences = getSharedPreferences("cookie",MODE_PRIVATE);
@@ -78,11 +78,10 @@ public class MessageActivity extends AppCompatActivity {
             }
         });
 
-        destroyButton.setOnClickListener(new View.OnClickListener() {
+        CalculateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                myRef.child(room_number).removeValue();
-                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+                Intent intent = new Intent(getApplicationContext(), AccountMoneyActivity.class);
 
                 startActivity(intent);
             }

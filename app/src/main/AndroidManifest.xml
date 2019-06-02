@@ -7,6 +7,7 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <uses-permission android:name="android.permission.INTERNET" />
 
 
     <application
@@ -39,6 +40,7 @@
         <activity android:name=".BoardActivity" android:label="방 목록"/>
         <activity android:name=".MessageActivity" android:label="채팅방"
             android:windowSoftInputMode="adjustNothing"/>
+        <activity android:name=".AccountMoneyActivity" android:label="계산"/>
     </application>
 
 </manifest>
