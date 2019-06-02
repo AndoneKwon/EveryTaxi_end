@@ -51,12 +51,6 @@ public class MessageActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.message_main);
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(
-                this, //context(액티비티 인스턴스)
-                android.R.layout.simple_list_item_1, // 한 줄에 하나의 텍스트 아이템만 보여주는 레이아웃 파일
-                android.R.id.text1  // 데이터가 저장되어 있는 ArrayList 객체
-        );
-
         listView = (ListView) findViewById(R.id.listView);
         editText = (EditText) findViewById(R.id.editText);
         sendButton = (Button) findViewById(R.id.button);
@@ -69,7 +63,7 @@ public class MessageActivity extends AppCompatActivity {
         Toast.makeText(this, "채팅방에 입장하였습니다.", Toast.LENGTH_SHORT).show();
 
         // 기본 Text를 담을 수 있는 simple_list_item_1을 사용해서 ArrayAdapter를 만들고 listview에 설정
-        adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, android.R.id.text1);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, android.R.id.text1);
         listView.setAdapter(adapter);
 
         sendButton.setOnClickListener(new View.OnClickListener()
