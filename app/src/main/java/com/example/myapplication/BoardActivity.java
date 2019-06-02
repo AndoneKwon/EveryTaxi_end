@@ -10,6 +10,9 @@ import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -85,6 +88,8 @@ public class BoardActivity extends AppCompatActivity
         setTitle("출발지 : " + src_name);
 
         SharedPreferences sharedPreferences = getSharedPreferences("cookie",MODE_PRIVATE);
+
+
 
         Thread server_connection = new Thread() // 서버 연결 스레드
         {
@@ -449,6 +454,34 @@ public class BoardActivity extends AppCompatActivity
                 }
             }
         });
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        super.onCreateOptionsMenu(menu);
+        MenuInflater m_inf = getMenuInflater();
+        m_inf.inflate(R.menu.board_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+        if (item.getItemId() == R.id.start)
+        {
+            return true;
+        }
+        else if (item.getItemId() == R.id.arrive)
+        {
+            return true;
+        }
+        else if (item.getItemId() == R.id.quit)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     public String HttpShowRoom(String urlString, String params, String src)
