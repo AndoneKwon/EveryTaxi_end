@@ -22,6 +22,9 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -40,6 +43,7 @@ public class BoardActivity extends AppCompatActivity
     Button make_room;
     Button show_map;
     Button start_btn;
+    Button arrive_btn;
     String username;
     String root_url = "https://everytaxi95.cafe24.com";
     String show_room_url = "https://everytaxi95.cafe24.com/show_room.php";
@@ -433,6 +437,102 @@ public class BoardActivity extends AppCompatActivity
                             img[3] = dlg.findViewById(R.id.img4);
 
                             start_btn = (Button) dlg.findViewById(R.id.start);
+                            arrive_btn = (Button) dlg.findViewById(R.id.arrive);
+
+                            arrive_btn.setOnClickListener(new View.OnClickListener()
+                            {
+                                @Override
+                                public void onClick(View v)
+                                {
+                                    SharedPreferences sharedPreferences = getSharedPreferences("cookie",MODE_PRIVATE);
+
+                                    username = sharedPreferences.getString("username", "");
+
+                                    thread_room_number = sharedPreferences.getString("room_number", "");
+
+                                    if (username.equals(""))
+                                    {
+                                        Toast.makeText(BoardActivity.this, "로그인 후에 이용해주세요.", Toast.LENGTH_SHORT).show();
+                                    }
+                                    else
+                                    {
+                                        Thread arrive_room_connection = new Thread() // 방에 입장하는 스레드
+                                        {
+                                            public void run()
+                                            {
+                                                synchronized (this)
+                                                {
+                                                    SharedPreferences sharedPreferences = getSharedPreferences("cookie",MODE_PRIVATE);
+
+                                                    username = sharedPreferences.getString("username", "");
+
+                                                    thread_room_number = sharedPreferences.getString("room_number", "");
+
+                                                    arrive_result = HttpArriveRoom(arrive_room_url, "", username, thread_room_number);
+
+                                                    this.notify();
+                                                }
+                                            }
+                                        };
+
+                                        arrive_room_connection.start();
+
+                                        synchronized (arrive_room_connection)
+                                        {
+                                            try
+                                            {
+                                                arrive_room_connection.wait();
+                                            }
+                                            catch (InterruptedException e)
+                                            {
+                                                e.printStackTrace();
+                                            }
+                                        }
+
+                                        if (arrive_result.equals("Success"))
+                                        {
+                                            Toast.makeText(BoardActivity.this, "도착했습니다. 감사합니다.", Toast.LENGTH_SHORT).show();
+
+                                            sharedPreferences = getSharedPreferences("cookie",MODE_PRIVATE);
+
+                                            thread_room_number = sharedPreferences.getString("room_number", "");
+
+                                            FirebaseDatabase database = FirebaseDatabase.getInstance();
+                                            DatabaseReference myRef = database.getReference("chatrooms");
+                                            myRef.child(thread_room_number).removeValue();
+
+                                            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+
+                                            startActivity(intent);
+                                        }
+                                        else if (arrive_result.equals("Not My Room"))
+                                        {
+                                            Toast.makeText(BoardActivity.this, "해당 방에 속해있지 않습니다.", Toast.LENGTH_SHORT).show();
+                                        }
+                                        else if (arrive_result.equals("No Start"))
+                                        {
+                                            Toast.makeText(BoardActivity.this, "아직 출발하지 않았습니다.", Toast.LENGTH_SHORT).show();
+                                        }
+                                        else if (arrive_result.equals("No Creator"))
+                                        {
+                                            Toast.makeText(BoardActivity.this, "방장만 도착 버튼을 클릭할 수 있습니다.", Toast.LENGTH_SHORT).show();
+                                        }
+                                        else if (arrive_result.equals("No Room"))
+                                        {
+                                            Toast.makeText(BoardActivity.this, "해당 방에 속해있지 않습니다.", Toast.LENGTH_SHORT).show();
+                                        }
+                                        else if (arrive_result.equals("Wrong Access"))
+                                        {
+                                            Toast.makeText(BoardActivity.this, "잘못된 접근입니다.", Toast.LENGTH_SHORT).show();
+                                        }
+                                        else if (arrive_result.equals("Connection Error"))
+                                        {
+                                            Toast.makeText(BoardActivity.this, "서버와의 연결에 문제가 발생했습니다.", Toast.LENGTH_SHORT).show();
+                                        }
+
+                                    }
+                                }
+                            });
 
                             start_btn.setOnClickListener(new View.OnClickListener() {
                                 @Override
@@ -513,8 +613,8 @@ public class BoardActivity extends AppCompatActivity
         });
 
         make_room = (Button) findViewById(R.id.make_room_btn);
-
         show_map = (Button) findViewById(R.id.show_map);
+
 
         show_map.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -628,82 +728,7 @@ public class BoardActivity extends AppCompatActivity
 
         thread_room_number = sharedPreferences.getString("room_number", "");
 
-        if (item.getItemId() == R.id.arrive) // 도착
-        {
-            if (username.equals("")) // 로그인 하지 않은 상태
-            {
-                Toast.makeText(this, "로그인 후에 이용해주세요.", Toast.LENGTH_SHORT).show();
-
-                return false;
-            }
-            else
-            {
-                Thread arrive_room_connection = new Thread() // 방에 입장하는 스레드
-                {
-                    public void run()
-                    {
-                        synchronized (this)
-                        {
-                            SharedPreferences sharedPreferences = getSharedPreferences("cookie",MODE_PRIVATE);
-
-                            username = sharedPreferences.getString("username", "");
-
-                            Log.d("TAG", username);
-
-                            arrive_result = HttpArriveRoom(arrive_room_url, "", username);
-
-                            this.notify();
-                        }
-                    }
-                };
-
-                arrive_room_connection.start();
-
-                synchronized (arrive_room_connection)
-                {
-                    try
-                    {
-                        arrive_room_connection.wait();
-                    }
-                    catch (InterruptedException e)
-                    {
-                        e.printStackTrace();
-                    }
-                }
-
-                if (arrive_result.equals("Success"))
-                {
-                    Toast.makeText(this, "도착했습니다. 감사합니다.", Toast.LENGTH_SHORT).show();
-
-                    Intent intent = new Intent(getApplicationContext(), MainActivity.class);
-
-                    startActivity(intent);
-                }
-                else if (arrive_result.equals("No Start"))
-                {
-                    Toast.makeText(this, "아직 출발하지 않았습니다.", Toast.LENGTH_SHORT).show();
-                }
-                else if (arrive_result.equals("No Creator"))
-                {
-                    Toast.makeText(this, "방장만 도착 버튼을 클릭할 수 있습니다.", Toast.LENGTH_SHORT).show();
-                }
-                else if (arrive_result.equals("No Room"))
-                {
-                    Toast.makeText(this, "속해있는 방이 없습니다.", Toast.LENGTH_SHORT).show();
-                }
-                else if (arrive_result.equals("Wrong Access"))
-                {
-                    Toast.makeText(this, "잘못된 접근입니다.", Toast.LENGTH_SHORT).show();
-                }
-                else if (arrive_result.equals("Connection Error"))
-                {
-                    Toast.makeText(BoardActivity.this, "서버와의 연결에 문제가 발생했습니다.", Toast.LENGTH_SHORT).show();
-                }
-
-                return true;
-            }
-        }
-        else if (item.getItemId() == R.id.quit) // 방 나가기
+        if (item.getItemId() == R.id.quit) // 방 나가기
         {
             if (username.equals("")) // 로그인 하지 않은 상태
             {
@@ -838,7 +863,7 @@ public class BoardActivity extends AppCompatActivity
         return result;
     }
 
-    public String HttpArriveRoom(String urlString, String params, String username)
+    public String HttpArriveRoom(String urlString, String params, String username, String room_number)
     {
         String send_msg = "";
         String tmp_str = "";
@@ -855,7 +880,7 @@ public class BoardActivity extends AppCompatActivity
 
             OutputStreamWriter osw = new OutputStreamWriter(conn.getOutputStream());
 
-            send_msg = "username=" + username;
+            send_msg = "username=" + username + "&room_number=" + room_number;
 
             osw.write(send_msg);
             osw.flush();
