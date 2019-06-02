@@ -272,6 +272,7 @@ public class BoardActivity extends AppCompatActivity
                                 {
                                     try
                                     {
+
                                         user_arr = user_str.split(",");
 
                                         for (int i = 0; i < user_arr.length; i++)
