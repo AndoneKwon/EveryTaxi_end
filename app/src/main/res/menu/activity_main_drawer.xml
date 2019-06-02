@@ -16,11 +16,6 @@
             android:id="@+id/logout_menu"
             android:icon="@drawable/logout"
             android:title="로그아웃" />
-
-        <item
-            android:id="@+id/test"
-            android:icon="@drawable/logout"
-            android:title="test" />
     </group>
 
 </menu>

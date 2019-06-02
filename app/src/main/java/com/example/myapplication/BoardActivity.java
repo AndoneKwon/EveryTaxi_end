@@ -329,13 +329,9 @@ public class BoardActivity extends AppCompatActivity
                                 e.printStackTrace();
                             }
 
-
-
                             sharedPreferences = getSharedPreferences("cookie",MODE_PRIVATE);
 
                             thread_room_number = sharedPreferences.getString("room_number", "");
-
-
 
                             dlg = (View) View.inflate(BoardActivity.this, R.layout.user_list_dlg, null);
 

@@ -42,57 +42,35 @@ public class MessageActivity extends AppCompatActivity {
     EditText editText;
     Button sendButton;
     Button destroyButton;
-    ScrollView chatScrollView;
-
-    private RecyclerView recyclerView;
-
 
     FirebaseDatabase database = FirebaseDatabase.getInstance();
     DatabaseReference myRef = database.getReference("chatrooms");
-    //mLayoutManager = new LinearLayoutManager(this);
 
     protected void onCreate(Bundle savedInstanceState) {
         getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.message_main);
+
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
                 this, //context(액티비티 인스턴스)
                 android.R.layout.simple_list_item_1, // 한 줄에 하나의 텍스트 아이템만 보여주는 레이아웃 파일
                 android.R.id.text1  // 데이터가 저장되어 있는 ArrayList 객체
         );
+
         listView = (ListView) findViewById(R.id.listView);
         editText = (EditText) findViewById(R.id.editText);
         sendButton = (Button) findViewById(R.id.button);
         destroyButton = (Button) findViewById(R.id.destroy_button);
-        //chatScrollView = (ScrollView) findViewById(R.id.chatScrollView);
-/*
-        chatScrollView.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if( hasFocus == true ){
-                    chatScrollView.postDelayed( new Runnable(){ @Override public void run()
-                    {
-                        chatScrollView.fullScroll(View.FOCUS_DOWN);
-                    }
-                    }, 10);
-                }
-
-            }
-        });//자동으로 스크롤 포커스
-
-*/
 
         listView.setTranscriptMode(ListView.TRANSCRIPT_MODE_ALWAYS_SCROLL);
         SharedPreferences sharedPreferences = getSharedPreferences("cookie",MODE_PRIVATE);
         username = sharedPreferences.getString("username", "");
-        room_number=sharedPreferences.getString("room_number","");//
-        Toast.makeText(getApplicationContext(),room_number,Toast.LENGTH_LONG).show();
+        room_number=sharedPreferences.getString("room_number","");
+        Toast.makeText(this, "채팅방에 입장하였습니다.", Toast.LENGTH_SHORT).show();
 
-// 기본 Text를 담을 수 있는 simple_list_item_1을 사용해서 ArrayAdapter를 만들고 listview에 설정
+        // 기본 Text를 담을 수 있는 simple_list_item_1을 사용해서 ArrayAdapter를 만들고 listview에 설정
         adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, android.R.id.text1);
         listView.setAdapter(adapter);
-
-        //FirebaseDatabase.getInstance().getReference().child("chatrooms").push().setValue(room_number);
 
         sendButton.setOnClickListener(new View.OnClickListener()
         {
@@ -123,9 +101,6 @@ public class MessageActivity extends AppCompatActivity {
                 ChatData chatData = dataSnapshot.getValue(ChatData.class);  // chatData를 가져오고
                 finalAdapter.add(chatData.getUserName() + ": " + chatData.getMessage());// adapter에 추가합니다.
                 listView.setSelection(finalAdapter.getCount() - 1);
-                //sendButton.setEnabled(true);
-                //recyclerView.setLayoutManager(new LinearLayoutManager(MessageActivity.this));
-                //recyclerView.setAdapter(new RecyclerViewAdapter());
             }
 
             @Override
@@ -149,65 +124,4 @@ public class MessageActivity extends AppCompatActivity {
     public DatabaseReference getMyRef() {
         return myRef;
     }
-/*
-    class RecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
-
-
-        List<ChatModel.Comment> comments;
-        public RecyclerViewAdapter() {
-            comments = new ArrayList<>();
-
-            FirebaseDatabase.getInstance().getReference().child("chat").child("comments").addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    comments.clear();
-
-                    for(DataSnapshot item : dataSnapshot.getChildren()){
-                        comments.add(item.getValue(ChatModel.Comment.class));
-                    }
-
-                    notifyDataSetChanged();
-
-
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-
-                }
-            });
-
-
-        }
-
-        @Override
-        public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.recycleview_item,parent,false);
-
-
-            return new MessageViewHolder(view);
-        }
-
-        @Override
-        public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-
-
-            ((MessageViewHolder)holder).textView_message.setText(comments.get(position).message);
-        }
-
-        @Override
-        public int getItemCount() {
-            return comments.size();
-        }
-
-        private class MessageViewHolder extends RecyclerView.ViewHolder {
-            public TextView textView_message;
-
-            public MessageViewHolder(View view) {
-                super(view);
-                textView_message = (TextView) view.findViewById(R.id.textView_message);
-            }
-        }
-    }
-    */
 }
