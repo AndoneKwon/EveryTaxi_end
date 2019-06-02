@@ -44,6 +44,7 @@ public class BoardActivity extends AppCompatActivity
     String make_room_url = "https://everytaxi95.cafe24.com/make_room.php";
     String show_user_url = "https://everytaxi95.cafe24.com/show_room_user.php";
     String enter_room_url = "https://everytaxi95.cafe24.com/enter_room.php";
+    String quit_room_url = "https://everytaxi95.cafe24.com/quit_room.php";
     String image_url = "https://everytaxi95.cafe24.com/uploads/";
     String make_result;
     String dest;
@@ -51,6 +52,7 @@ public class BoardActivity extends AppCompatActivity
     String thread_room_number;
     String user_str;
     String enter_result;
+    String quit_result;
     String[] user_arr;
     String[] room_arr;
     String[] tmp_adapter_room_arr;
@@ -90,8 +92,6 @@ public class BoardActivity extends AppCompatActivity
         setTitle("출발지 : " + src_name);
 
         SharedPreferences sharedPreferences = getSharedPreferences("cookie",MODE_PRIVATE);
-
-
 
         Thread server_connection = new Thread() // 서버 연결 스레드
         {
@@ -272,6 +272,12 @@ public class BoardActivity extends AppCompatActivity
                                 {
                                     try
                                     {
+                                        user_arr = new String[4];
+
+                                        for (int i = 0; i < 4; i++)
+                                        {
+                                            user_arr[i] = "";
+                                        }
 
                                         user_arr = user_str.split(",");
 
@@ -496,6 +502,12 @@ public class BoardActivity extends AppCompatActivity
                                 {
                                     Toast.makeText(BoardActivity.this, "이미 속해있는 방이 있습니다.", Toast.LENGTH_SHORT).show();
                                 }
+                                else if (make_result.equals("Success"))
+                                {
+                                    intent = new Intent(getApplicationContext(), MessageActivity.class);
+
+                                    startActivity(intent);
+                                }
                             }
                         }
                     });
@@ -523,6 +535,8 @@ public class BoardActivity extends AppCompatActivity
         SharedPreferences sharedPreferences = getSharedPreferences("cookie",MODE_PRIVATE);
 
         username = sharedPreferences.getString("username", "");
+
+        thread_room_number = sharedPreferences.getString("room_number", "");
 
         if (item.getItemId() == R.id.start) // 출발
         {
@@ -562,12 +576,117 @@ public class BoardActivity extends AppCompatActivity
             }
             else
             {
-                // 동작 정의
-                return true;
+                Thread quit_room_connection = new Thread() // 방에 입장하는 스레드
+                {
+                    public void run()
+                    {
+                        synchronized (this)
+                        {
+                            SharedPreferences sharedPreferences = getSharedPreferences("cookie",MODE_PRIVATE);
+
+                            username = sharedPreferences.getString("username", "");
+
+                            thread_room_number = sharedPreferences.getString("room_number", "");
+
+                            quit_result = HttpQuitRoom(quit_room_url, "", username, thread_room_number);
+
+                            this.notify();
+                        }
+                    }
+                };
+
+                quit_room_connection.start();
+
+                synchronized (quit_room_connection) // 스레드 작업 종료를 기다림
+                {
+                    try
+                    {
+                        quit_room_connection.wait();
+                    }
+                    catch (InterruptedException e)
+                    {
+                        e.printStackTrace();
+                    }
+
+                    if (quit_result.equals("Destroy Room"))
+                    {
+                        Toast.makeText(BoardActivity.this, "성공적으로 방이 제거되었습니다.", Toast.LENGTH_SHORT).show();
+                    }
+                    else if (quit_result.equals("Quit"))
+                    {
+                        Toast.makeText(BoardActivity.this, "성공적으로 방에서 나왔습니다.", Toast.LENGTH_SHORT).show();
+                    }
+                    else if (quit_result.equals("No Room"))
+                    {
+                        Toast.makeText(BoardActivity.this, "속해있는 방이 없습니다.", Toast.LENGTH_SHORT).show();
+                    }
+                    else if (quit_result.equals("Wrong Access"))
+                    {
+                        Toast.makeText(BoardActivity.this, "잘못된 접근입니다.", Toast.LENGTH_SHORT).show();
+                    }
+                    else if (quit_result.equals("Connection Error"))
+                    {
+                        Toast.makeText(BoardActivity.this, "서버와의 연결에 문제가 발생했습니다.", Toast.LENGTH_SHORT).show();
+                    }
+
+                    return true;
+                }
             }
         }
 
         return false;
+    }
+
+    public String HttpQuitRoom(String urlString, String params, String username, String room_number)
+    {
+        String send_msg = "";
+        String tmp_str = "";
+        String result = "";
+
+        try
+        {
+            URL connectUrl = new URL(urlString);
+
+            HttpURLConnection conn = (HttpURLConnection) connectUrl.openConnection();
+
+            conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+            conn.setRequestMethod("POST");
+
+            OutputStreamWriter osw = new OutputStreamWriter(conn.getOutputStream());
+
+            send_msg = "username=" + username + "&room_number=" + room_number;
+
+            osw.write(send_msg);
+            osw.flush();
+
+            if (conn.getResponseCode() == conn.HTTP_OK)
+            {
+                InputStreamReader tmp = new InputStreamReader(conn.getInputStream(), "UTF-8");
+                BufferedReader reader = new BufferedReader(tmp);
+                StringBuffer buffer = new StringBuffer();
+
+                while ((tmp_str = reader.readLine()) != null)
+                {
+                    buffer.append(tmp_str);
+                }
+
+                result = buffer.toString();
+            }
+            else
+            {
+                Log.i("통신 결과 : ", conn.getResponseCode() + " 에러");
+
+                result = "Connection Error";
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+
+            result = "Exception Error";
+        }
+
+        return result;
     }
 
     public String HttpEnterRoom(String urlString, String params, String username, String room_number)
