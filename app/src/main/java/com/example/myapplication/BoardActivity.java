@@ -43,12 +43,14 @@ public class BoardActivity extends AppCompatActivity
     String show_room_url = "https://everytaxi95.cafe24.com/show_room.php";
     String make_room_url = "https://everytaxi95.cafe24.com/make_room.php";
     String show_user_url = "https://everytaxi95.cafe24.com/show_room_user.php";
+    String enter_room_url = "https://everytaxi95.cafe24.com/enter_room.php";
     String image_url = "https://everytaxi95.cafe24.com/uploads/";
     String make_result;
     String dest;
     String room_list;
     String thread_room_number;
     String user_str;
+    String enter_result;
     String[] user_arr;
     String[] room_arr;
     String[] tmp_adapter_room_arr;
@@ -262,7 +264,6 @@ public class BoardActivity extends AppCompatActivity
                             e.printStackTrace();
                         }
 
-
                         Thread get_user_picture = new Thread() // 유저 사진 받아오는 스레드
                         {
                             public void run()
@@ -334,10 +335,6 @@ public class BoardActivity extends AppCompatActivity
                                 e.printStackTrace();
                             }
 
-                            sharedPreferences = getSharedPreferences("cookie",MODE_PRIVATE);
-
-                            thread_room_number = sharedPreferences.getString("room_number", "");
-
                             dlg = (View) View.inflate(BoardActivity.this, R.layout.user_list_dlg, null);
 
                             AlertDialog.Builder dlg_builder = new AlertDialog.Builder(BoardActivity.this);
@@ -345,13 +342,67 @@ public class BoardActivity extends AppCompatActivity
                             dlg_builder.setTitle("참가자 목록");
                             dlg_builder.setIcon(R.mipmap.ic_launcher);
                             dlg_builder.setView(dlg);
-                            dlg_builder.setPositiveButton("참가", new DialogInterface.OnClickListener() {
+
+                            dlg_builder.setPositiveButton("참가", new DialogInterface.OnClickListener()
+                            {
                                 @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    Intent intent = new Intent(getApplicationContext(), MessageActivity.class);
-                                    startActivity(intent);
+                                public void onClick(DialogInterface dialog, int which)
+                                {
+                                    Thread enter_room_connection = new Thread() // 방에 입장하는 스레드
+                                    {
+                                        public void run()
+                                        {
+                                            synchronized (this)
+                                            {
+                                                SharedPreferences sharedPreferences = getSharedPreferences("cookie",MODE_PRIVATE);
+
+                                                thread_room_number = sharedPreferences.getString("room_number", "");
+
+                                                enter_result = HttpEnterRoom(enter_room_url, "", username, thread_room_number);
+
+                                                this.notify();
+                                            }
+                                        }
+                                    };
+
+                                    enter_room_connection.start();
+
+                                    synchronized (enter_room_connection) // 스레드 작업 종료를 기다림
+                                    {
+                                        try
+                                        {
+                                            enter_room_connection.wait();
+                                        }
+                                        catch (InterruptedException e)
+                                        {
+                                            e.printStackTrace();
+                                        }
+
+                                        if (enter_result.equals("Success"))
+                                        {
+                                            Intent intent = new Intent(getApplicationContext(), MessageActivity.class);
+                                            startActivity(intent);
+                                        }
+                                        else if (enter_result.equals("Exist"))
+                                        {
+                                            Toast.makeText(BoardActivity.this, "이미 속해있는 방이 있습니다.", Toast.LENGTH_SHORT).show();
+                                        }
+                                        else if (enter_result.equals("Full"))
+                                        {
+                                            Toast.makeText(BoardActivity.this, "방이 가득 차서 입장할 수 없습니다.", Toast.LENGTH_SHORT).show();
+                                        }
+                                        else if (enter_result.equals("Wrong Access"))
+                                        {
+                                            Toast.makeText(BoardActivity.this, "잘못된 접근입니다.", Toast.LENGTH_SHORT).show();
+                                        }
+                                        else if (enter_result.equals("Connection Error"))
+                                        {
+                                            Toast.makeText(BoardActivity.this, "서버와의 연결에 문제가 발생했습니다.", Toast.LENGTH_SHORT).show();
+                                        }
+                                    }
                                 }
                             });
+
                             dlg_builder.setNegativeButton("취소", null);
 
                             tv[0] = dlg.findViewById(R.id.tv1);
@@ -367,7 +418,7 @@ public class BoardActivity extends AppCompatActivity
                             for (int i = 0; i < user_arr.length; i++)
                             {
                                 tv[i].setText(user_arr[i]);
-                                img[i].setImageBitmap(bitmap[i]);
+                                //img[i].setImageBitmap(bitmap[i]);
                             }
 
                             dlg_builder.show();
@@ -468,21 +519,163 @@ public class BoardActivity extends AppCompatActivity
     @Override
     public boolean onOptionsItemSelected(MenuItem item)
     {
-        if (item.getItemId() == R.id.start)
+        SharedPreferences sharedPreferences = getSharedPreferences("cookie",MODE_PRIVATE);
+
+        username = sharedPreferences.getString("username", "");
+
+        if (item.getItemId() == R.id.start) // 출발
         {
-            return true;
+            if (username.equals("")) // 로그인 하지 않은 상태
+            {
+                Toast.makeText(this, "로그인 후에 이용해주세요.", Toast.LENGTH_SHORT).show();
+
+                return false;
+            }
+            else
+            {
+                // 동작 정의
+                return true;
+            }
         }
-        else if (item.getItemId() == R.id.arrive)
+        else if (item.getItemId() == R.id.arrive) // 도착
         {
-            return true;
+            if (username.equals("")) // 로그인 하지 않은 상태
+            {
+                Toast.makeText(this, "로그인 후에 이용해주세요.", Toast.LENGTH_SHORT).show();
+
+                return false;
+            }
+            else
+            {
+                // 동작 정의
+                return true;
+            }
         }
-        else if (item.getItemId() == R.id.quit)
+        else if (item.getItemId() == R.id.quit) // 방 나가기
         {
-            return true;
+            if (username.equals("")) // 로그인 하지 않은 상태
+            {
+                Toast.makeText(this, "로그인 후에 이용해주세요.", Toast.LENGTH_SHORT).show();
+
+                return false;
+            }
+            else
+            {
+                // 동작 정의
+                return true;
+            }
         }
 
         return false;
     }
+
+    public String HttpEnterRoom(String urlString, String params, String username, String room_number)
+    {
+        String send_msg = "";
+        String tmp_str = "";
+        String result = "";
+
+        try
+        {
+            URL connectUrl = new URL(urlString);
+
+            HttpURLConnection conn = (HttpURLConnection) connectUrl.openConnection();
+
+            conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+            conn.setRequestMethod("POST");
+
+            OutputStreamWriter osw = new OutputStreamWriter(conn.getOutputStream());
+
+            send_msg = "username=" + username + "&room_number=" + room_number;
+
+            osw.write(send_msg);
+            osw.flush();
+
+            if (conn.getResponseCode() == conn.HTTP_OK)
+            {
+                InputStreamReader tmp = new InputStreamReader(conn.getInputStream(), "UTF-8");
+                BufferedReader reader = new BufferedReader(tmp);
+                StringBuffer buffer = new StringBuffer();
+
+                while ((tmp_str = reader.readLine()) != null)
+                {
+                    buffer.append(tmp_str);
+                }
+
+                result = buffer.toString();
+            }
+            else
+            {
+                Log.i("통신 결과 : ", conn.getResponseCode() + " 에러");
+
+                result = "Connection Error";
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+
+            result = "Exception Error";
+        }
+
+        return result;
+    }
+
+    /*
+
+    public String HttpIsCreator(String urlString, String params, String username) // 아직 미사용
+    {
+        String send_msg = "";
+        String tmp_str = "";
+        String result = "";
+
+        try
+        {
+            URL connectUrl = new URL(urlString);
+
+            HttpURLConnection conn = (HttpURLConnection) connectUrl.openConnection();
+
+            conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+            conn.setRequestMethod("POST");
+
+            OutputStreamWriter osw = new OutputStreamWriter(conn.getOutputStream());
+
+            send_msg = "username=" + username + "&src=" + src + "&dest=" + dest;
+
+            osw.write(send_msg);
+            osw.flush();
+
+            if (conn.getResponseCode() == conn.HTTP_OK)
+            {
+                InputStreamReader tmp = new InputStreamReader(conn.getInputStream(), "UTF-8");
+                BufferedReader reader = new BufferedReader(tmp);
+                StringBuffer buffer = new StringBuffer();
+
+                while ((tmp_str = reader.readLine()) != null)
+                {
+                    buffer.append(tmp_str);
+                }
+
+                result = buffer.toString();
+            }
+            else
+            {
+                Log.i("통신 결과 : ", conn.getResponseCode() + " 에러");
+
+                result = "Connection Error";
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+
+            result = "Exception Error";
+        }
+
+        return result;
+    }
+
+    */
 
     public String HttpShowRoom(String urlString, String params, String src)
     {
