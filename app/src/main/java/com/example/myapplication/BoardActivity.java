@@ -38,6 +38,8 @@ public class BoardActivity extends AppCompatActivity
 {
     String src_name;
     Button make_room;
+    Button show_map;
+    Button start_btn;
     String username;
     String root_url = "https://everytaxi95.cafe24.com";
     String show_room_url = "https://everytaxi95.cafe24.com/show_room.php";
@@ -45,6 +47,8 @@ public class BoardActivity extends AppCompatActivity
     String show_user_url = "https://everytaxi95.cafe24.com/show_room_user.php";
     String enter_room_url = "https://everytaxi95.cafe24.com/enter_room.php";
     String quit_room_url = "https://everytaxi95.cafe24.com/quit_room.php";
+    String start_room_url = "https://everytaxi95.cafe24.com/start_action.php";
+    String arrive_room_url = "https://everytaxi95.cafe24.com/arrive_action.php";
     String image_url = "https://everytaxi95.cafe24.com/uploads/";
     String make_result;
     String dest;
@@ -53,6 +57,8 @@ public class BoardActivity extends AppCompatActivity
     String user_str;
     String enter_result;
     String quit_result;
+    String start_result;
+    String arrive_result;
     String[] user_arr;
     String[] room_arr;
     String[] tmp_adapter_room_arr;
@@ -390,6 +396,10 @@ public class BoardActivity extends AppCompatActivity
                                             Intent intent = new Intent(getApplicationContext(), MessageActivity.class);
                                             startActivity(intent);
                                         }
+                                        else if (enter_result.equals("Start"))
+                                        {
+                                            Toast.makeText(BoardActivity.this, "이미 출발한 방이라 참가할 수 없습니다.", Toast.LENGTH_SHORT).show();
+                                        }
                                         else if (enter_result.equals("Exist"))
                                         {
                                             Toast.makeText(BoardActivity.this, "이미 속해있는 방이 있습니다.", Toast.LENGTH_SHORT).show();
@@ -422,6 +432,73 @@ public class BoardActivity extends AppCompatActivity
                             img[2] = dlg.findViewById(R.id.img3);
                             img[3] = dlg.findViewById(R.id.img4);
 
+                            start_btn = (Button) dlg.findViewById(R.id.start);
+
+                            start_btn.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    Thread start_room_connection = new Thread() // 방에 입장하는 스레드
+                                    {
+                                        public void run()
+                                        {
+                                            synchronized (this)
+                                            {
+                                                SharedPreferences sharedPreferences = getSharedPreferences("cookie",MODE_PRIVATE);
+
+                                                username = sharedPreferences.getString("username", "");
+
+                                                thread_room_number = sharedPreferences.getString("room_number", "");
+
+                                                start_result = HttpStartRoom(start_room_url, "", username, thread_room_number);
+
+                                                this.notify();
+                                            }
+                                        }
+                                    };
+
+                                    start_room_connection.start();
+
+                                    synchronized (start_room_connection) // 스레드 작업 종료를 기다림
+                                    {
+                                        try
+                                        {
+                                            start_room_connection.wait();
+                                        }
+                                        catch (InterruptedException e)
+                                        {
+                                            e.printStackTrace();
+                                        }
+
+                                        if (start_result.equals("Success"))
+                                        {
+                                            Toast.makeText(BoardActivity.this, "출발하였습니다. 도착 시 도착 버튼을 클릭해주세요.", Toast.LENGTH_SHORT).show();
+
+                                            Intent intent = new Intent(getApplicationContext(), BoardActivity.class);
+
+                                            intent.putExtra("src_name", src_name);
+
+                                            startActivity(intent);
+                                        }
+                                        else if (start_result.equals("No Creator"))
+                                        {
+                                            Toast.makeText(BoardActivity.this, "방장만 출발할 수 있습니다.", Toast.LENGTH_SHORT).show();
+                                        }
+                                        else if (start_result.equals("No Right"))
+                                        {
+                                            Toast.makeText(BoardActivity.this, "해당 방에 속해있지 않습니다.", Toast.LENGTH_SHORT).show();
+                                        }
+                                        else if (start_result.equals("Wrong Access"))
+                                        {
+                                            Toast.makeText(BoardActivity.this, "잘못된 접근입니다.", Toast.LENGTH_SHORT).show();
+                                        }
+                                        else if (start_result.equals("Connection Error"))
+                                        {
+                                            Toast.makeText(BoardActivity.this, "서버와의 연결에 문제가 발생했습니다.", Toast.LENGTH_SHORT).show();
+                                        }
+                                    }
+                                }
+                            });
+
                             for (int i = 0; i < user_arr.length; i++)
                             {
                                 tv[i].setText(user_arr[i]);
@@ -437,6 +514,17 @@ public class BoardActivity extends AppCompatActivity
 
         make_room = (Button) findViewById(R.id.make_room_btn);
 
+        show_map = (Button) findViewById(R.id.show_map);
+
+        show_map.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+
+                startActivity(intent);
+            }
+        });
+
         make_room.setOnClickListener(new View.OnClickListener()
         {
             @Override
@@ -449,8 +537,6 @@ public class BoardActivity extends AppCompatActivity
                     Intent intent = new Intent(getApplicationContext(), SignInActivity.class);
 
                     startActivity(intent);
-
-                    finish();
                 }
                 else
                 {
@@ -504,7 +590,11 @@ public class BoardActivity extends AppCompatActivity
                                 }
                                 else if (make_result.equals("Success"))
                                 {
-                                    intent = new Intent(getApplicationContext(), MessageActivity.class);
+                                    Toast.makeText(BoardActivity.this, "성공적으로 방이 생성되었습니다.", Toast.LENGTH_SHORT).show();
+
+                                    intent = new Intent(getApplicationContext(), BoardActivity.class);
+
+                                    intent.putExtra("src_name", src_name);
 
                                     startActivity(intent);
                                 }
@@ -538,7 +628,7 @@ public class BoardActivity extends AppCompatActivity
 
         thread_room_number = sharedPreferences.getString("room_number", "");
 
-        if (item.getItemId() == R.id.start) // 출발
+        if (item.getItemId() == R.id.arrive) // 도착
         {
             if (username.equals("")) // 로그인 하지 않은 상태
             {
@@ -548,21 +638,68 @@ public class BoardActivity extends AppCompatActivity
             }
             else
             {
-                // 동작 정의
-                return true;
-            }
-        }
-        else if (item.getItemId() == R.id.arrive) // 도착
-        {
-            if (username.equals("")) // 로그인 하지 않은 상태
-            {
-                Toast.makeText(this, "로그인 후에 이용해주세요.", Toast.LENGTH_SHORT).show();
+                Thread arrive_room_connection = new Thread() // 방에 입장하는 스레드
+                {
+                    public void run()
+                    {
+                        synchronized (this)
+                        {
+                            SharedPreferences sharedPreferences = getSharedPreferences("cookie",MODE_PRIVATE);
 
-                return false;
-            }
-            else
-            {
-                // 동작 정의
+                            username = sharedPreferences.getString("username", "");
+
+                            Log.d("TAG", username);
+
+                            arrive_result = HttpArriveRoom(arrive_room_url, "", username);
+
+                            this.notify();
+                        }
+                    }
+                };
+
+                arrive_room_connection.start();
+
+                synchronized (arrive_room_connection)
+                {
+                    try
+                    {
+                        arrive_room_connection.wait();
+                    }
+                    catch (InterruptedException e)
+                    {
+                        e.printStackTrace();
+                    }
+                }
+
+                if (arrive_result.equals("Success"))
+                {
+                    Toast.makeText(this, "도착했습니다. 감사합니다.", Toast.LENGTH_SHORT).show();
+
+                    Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+
+                    startActivity(intent);
+                }
+                else if (arrive_result.equals("No Start"))
+                {
+                    Toast.makeText(this, "아직 출발하지 않았습니다.", Toast.LENGTH_SHORT).show();
+                }
+                else if (arrive_result.equals("No Creator"))
+                {
+                    Toast.makeText(this, "방장만 도착 버튼을 클릭할 수 있습니다.", Toast.LENGTH_SHORT).show();
+                }
+                else if (arrive_result.equals("No Room"))
+                {
+                    Toast.makeText(this, "속해있는 방이 없습니다.", Toast.LENGTH_SHORT).show();
+                }
+                else if (arrive_result.equals("Wrong Access"))
+                {
+                    Toast.makeText(this, "잘못된 접근입니다.", Toast.LENGTH_SHORT).show();
+                }
+                else if (arrive_result.equals("Connection Error"))
+                {
+                    Toast.makeText(BoardActivity.this, "서버와의 연결에 문제가 발생했습니다.", Toast.LENGTH_SHORT).show();
+                }
+
                 return true;
             }
         }
@@ -611,10 +748,22 @@ public class BoardActivity extends AppCompatActivity
                     if (quit_result.equals("Destroy Room"))
                     {
                         Toast.makeText(BoardActivity.this, "성공적으로 방이 제거되었습니다.", Toast.LENGTH_SHORT).show();
+
+                        Intent intent = new Intent(getApplicationContext(), BoardActivity.class);
+
+                        intent.putExtra("src_name", src_name);
+
+                        startActivity(intent);
                     }
                     else if (quit_result.equals("Quit"))
                     {
                         Toast.makeText(BoardActivity.this, "성공적으로 방에서 나왔습니다.", Toast.LENGTH_SHORT).show();
+
+                        Intent intent = new Intent(getApplicationContext(), BoardActivity.class);
+
+                        intent.putExtra("src_name", src_name);
+
+                        startActivity(intent);
                     }
                     else if (quit_result.equals("No Room"))
                     {
@@ -638,6 +787,110 @@ public class BoardActivity extends AppCompatActivity
     }
 
     public String HttpQuitRoom(String urlString, String params, String username, String room_number)
+    {
+        String send_msg = "";
+        String tmp_str = "";
+        String result = "";
+
+        try
+        {
+            URL connectUrl = new URL(urlString);
+
+            HttpURLConnection conn = (HttpURLConnection) connectUrl.openConnection();
+
+            conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+            conn.setRequestMethod("POST");
+
+            OutputStreamWriter osw = new OutputStreamWriter(conn.getOutputStream());
+
+            send_msg = "username=" + username + "&room_number=" + room_number;
+
+            osw.write(send_msg);
+            osw.flush();
+
+            if (conn.getResponseCode() == conn.HTTP_OK)
+            {
+                InputStreamReader tmp = new InputStreamReader(conn.getInputStream(), "UTF-8");
+                BufferedReader reader = new BufferedReader(tmp);
+                StringBuffer buffer = new StringBuffer();
+
+                while ((tmp_str = reader.readLine()) != null)
+                {
+                    buffer.append(tmp_str);
+                }
+
+                result = buffer.toString();
+            }
+            else
+            {
+                Log.i("통신 결과 : ", conn.getResponseCode() + " 에러");
+
+                result = "Connection Error";
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+
+            result = "Exception Error";
+        }
+
+        return result;
+    }
+
+    public String HttpArriveRoom(String urlString, String params, String username)
+    {
+        String send_msg = "";
+        String tmp_str = "";
+        String result = "";
+
+        try
+        {
+            URL connectUrl = new URL(urlString);
+
+            HttpURLConnection conn = (HttpURLConnection) connectUrl.openConnection();
+
+            conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+            conn.setRequestMethod("POST");
+
+            OutputStreamWriter osw = new OutputStreamWriter(conn.getOutputStream());
+
+            send_msg = "username=" + username;
+
+            osw.write(send_msg);
+            osw.flush();
+
+            if (conn.getResponseCode() == conn.HTTP_OK)
+            {
+                InputStreamReader tmp = new InputStreamReader(conn.getInputStream(), "UTF-8");
+                BufferedReader reader = new BufferedReader(tmp);
+                StringBuffer buffer = new StringBuffer();
+
+                while ((tmp_str = reader.readLine()) != null)
+                {
+                    buffer.append(tmp_str);
+                }
+
+                result = buffer.toString();
+            }
+            else
+            {
+                Log.i("통신 결과 : ", conn.getResponseCode() + " 에러");
+
+                result = "Connection Error";
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+
+            result = "Exception Error";
+        }
+
+        return result;
+    }
+
+    public String HttpStartRoom(String urlString, String params, String username, String room_number)
     {
         String send_msg = "";
         String tmp_str = "";
