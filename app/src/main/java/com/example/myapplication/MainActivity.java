@@ -39,6 +39,7 @@ public class MainActivity extends AppCompatActivity
     String src_name;
     NavigationView sidebar;
     Menu sidebar_menu;
+    GoogleMap googleMap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -96,15 +97,6 @@ public class MainActivity extends AppCompatActivity
         MapFragment mapFragment = (MapFragment)fragmentManager
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -192,6 +184,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onMapReady(final GoogleMap map) {
 
+        googleMap=map;
         LatLng Gongneung = new LatLng(37.625593, 127.073196);
         LatLng Hagye = new LatLng(37.636088, 127.068692);
         LatLng Seokgye = new LatLng(37.615198, 127.066089);
@@ -217,6 +210,13 @@ public class MainActivity extends AppCompatActivity
         markerOptions_T.title("태릉입구역");
         map.addMarker(markerOptions_T);
 
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            googleMap.setMyLocationEnabled(true);
+            googleMap.getUiSettings().setMyLocationButtonEnabled(true);
+        }
+
+
         map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener()
         {
             @Override
@@ -236,4 +236,17 @@ public class MainActivity extends AppCompatActivity
         map.moveCamera(CameraUpdateFactory.newLatLng(Gongneung));
         map.animateCamera(CameraUpdateFactory.zoomTo(14));
     }
+
+    private void setPermission(){
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
+                ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(this,
+                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_COARSE_LOCATION}, 1);
+            return;
+        }
+    }
+
 }
