@@ -496,11 +496,11 @@ public class BoardActivity extends AppCompatActivity
                                             sharedPreferences = getSharedPreferences("cookie",MODE_PRIVATE);
 
                                             thread_room_number = sharedPreferences.getString("room_number", "");
-
+/*
                                             FirebaseDatabase database = FirebaseDatabase.getInstance();
                                             DatabaseReference myRef = database.getReference("chatrooms");
                                             myRef.child(thread_room_number).removeValue();
-
+*/
                                             Intent intent = new Intent(getApplicationContext(), MainActivity.class);
 
                                             startActivity(intent);
