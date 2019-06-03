@@ -40,6 +40,8 @@ public class MainActivity extends AppCompatActivity
     NavigationView sidebar;
     Menu sidebar_menu;
     GoogleMap googleMap;
+    private final int MY_PERMISSIONS_REQUEST_Location=1001;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -53,6 +55,17 @@ public class MainActivity extends AppCompatActivity
         hello_msg = sharedPreferences.getString("hello_msg", "");
 
         username = sharedPreferences.getString("username", "");
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.ACCESS_FINE_LOCATION)) {
+            } else {
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, MY_PERMISSIONS_REQUEST_Location);
+            }
+        }
 
         if (hello_msg.equals("Hello"))
         {
@@ -212,8 +225,14 @@ public class MainActivity extends AppCompatActivity
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
                 ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            googleMap.setMyLocationEnabled(true);
-            googleMap.getUiSettings().setMyLocationButtonEnabled(true);
+            map.setMyLocationEnabled(true);
+            map.getUiSettings().setMyLocationButtonEnabled(true);
+            map.setOnMyLocationButtonClickListener(new GoogleMap.OnMyLocationButtonClickListener() {
+                @Override
+                public boolean onMyLocationButtonClick() {
+                    return false;
+                }
+            });
         }
 
 
