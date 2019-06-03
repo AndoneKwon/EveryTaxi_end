@@ -42,6 +42,7 @@ public class MessageActivity extends AppCompatActivity {
     EditText editText;
     Button sendButton;
     Button CalculateButton;
+    int in=0;
 
     FirebaseDatabase database = FirebaseDatabase.getInstance();
     DatabaseReference myRef = database.getReference("chatrooms");
@@ -62,9 +63,16 @@ public class MessageActivity extends AppCompatActivity {
         room_number=sharedPreferences.getString("room_number","");
         Toast.makeText(this, "채팅방에 입장하였습니다.", Toast.LENGTH_SHORT).show();
 
+
+
         // 기본 Text를 담을 수 있는 simple_list_item_1을 사용해서 ArrayAdapter를 만들고 listview에 설정
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, android.R.id.text1);
         listView.setAdapter(adapter);
+
+        ChatModel chatModel = new ChatModel(username, "님이 채팅방에 입장하셨습니다.");  //처음 입장시
+        myRef.child(room_number).child("comment").push().setValue(chatModel);  // 기본 database 하위 message라는 child에 chatData를 list로 만들기
+        editText.setText("");
+
 
         sendButton.setOnClickListener(new View.OnClickListener()
         {
@@ -91,10 +99,11 @@ public class MessageActivity extends AppCompatActivity {
         myRef.child(room_number).child("comment").addChildEventListener(new ChildEventListener() {  // message는 child의 이벤트를 수신합니다.
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                ChatData chatData = dataSnapshot.getValue(ChatData.class);  // chatData를 가져오고
-                finalAdapter.add(chatData.getUserName() + ": " + chatData.getMessage());// adapter에 추가합니다.
-                listView.setSelection(finalAdapter.getCount() - 1);
+                    ChatData chatData = dataSnapshot.getValue(ChatData.class);  // chatData를 가져오고
+                    finalAdapter.add(chatData.getUserName() + ": " + chatData.getMessage());// adapter에 추가합니다.
+                    listView.setSelection(finalAdapter.getCount() - 1);
             }
+
 
             @Override
             public void onChildChanged(DataSnapshot dataSnapshot, String s) { }
@@ -108,7 +117,6 @@ public class MessageActivity extends AppCompatActivity {
             @Override
             public void onCancelled(DatabaseError databaseError) { }
         });
-
     }
     public void setMyRef(DatabaseReference myRef) {
         this.myRef = myRef;
@@ -116,5 +124,23 @@ public class MessageActivity extends AppCompatActivity {
 
     public DatabaseReference getMyRef() {
         return myRef;
+    }
+
+    public interface OnBackPressedListener {
+        public void onBack();
+    }
+    private OnBackPressedListener mBackListener;
+
+    public void setOnBackPressedListener(OnBackPressedListener listener) {
+        mBackListener = listener;
+    }
+
+    // 뒤로가기 버튼을 눌렀을 때의 오버라이드 메소드
+    @Override
+    public void onBackPressed() {
+        ChatModel chatModel = new ChatModel(username, "님이 채팅방을 나가셨습니다");  //처음 입장시
+        myRef.child(room_number).child("comment").push().setValue(chatModel);  // 기본 database 하위 message라는 child에 chatData를 list로 만들기
+        editText.setText("");
+        super.onBackPressed();
     }
 }
